@@ -79,7 +79,7 @@ export const AudioEngine: React.FC<AudioEngineProps> = ({ onPermissionGranted })
             </div>
             <h2 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">Khám phá<br/>Bằng Âm Thanh</h2>
             <p className="text-gray-600 mb-8 text-sm leading-relaxed font-medium">
-              Đeo tai nghe và bắt đầu hành trình. Hệ thống sẽ tự động phát thuyết minh ẩm thực khi bạn đi dạo qua các nhà hàng tại Quận 4.
+              Đeo tai nghe và bắt đầu hành trình. Hệ thống sẽ tự động phát thuyết minh ẩm thực khi bạn đi dạo qua các nhà hàng tại Khu Ẩm Thực Vĩnh Khánh.
             </p>
             <button 
               onClick={handleStart}

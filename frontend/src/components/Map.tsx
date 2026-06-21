@@ -14,10 +14,8 @@ export const Map: React.FC = () => {
   const markersRef = useRef<Record<string, Marker>>({});
   const userMarkerRef = useRef<Marker | null>(null);
   
-  const { pois, userLocation } = usePoiStore(state => ({
-    pois: state.pois,
-    userLocation: state.userLocation
-  }));
+  const pois = usePoiStore(state => state.pois);
+  const userLocation = usePoiStore(state => state.userLocation);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
@@ -31,24 +29,25 @@ export const Map: React.FC = () => {
       container: mapContainerRef.current,
       style: {
         version: 8,
-        glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
         sources: {
-          'offline-tiles': {
-            type: 'vector',
-            url: `pmtiles://${PMTILES_URL}`
+          'osm': {
+            type: 'raster',
+            tiles: [
+              'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
+            ],
+            tileSize: 256,
+            attribution: '&copy; OpenStreetMap Contributors'
           }
         },
         layers: [
-          // A very basic style to render lines from the vector tiles so we see something
           {
-            id: 'vector-layer',
-            type: 'line',
-            source: 'offline-tiles',
-            'source-layer': 'zcta', // Example layer name from the protomaps sample
-            paint: {
-              'line-color': '#e65100',
-              'line-width': 1
-            }
+            id: 'osm-tiles',
+            type: 'raster',
+            source: 'osm',
+            minzoom: 0,
+            maxzoom: 19
           }
         ]
       },

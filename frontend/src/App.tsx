@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { usePoiStore } from './store/usePoiStore';
 import { Map } from './components/Map';
 import { AudioEngine } from './components/AudioEngine';
+import { CustomerChatbot } from './components/CustomerChatbot';
 
 function App() {
   const { 
@@ -15,6 +16,7 @@ function App() {
   } = usePoiStore();
 
   const [audioEnabled, setAudioEnabled] = useState(false);
+  
   const [mockLat, setMockLat] = useState<number>(10.7616);
   const [mockLng, setMockLng] = useState<number>(106.7029);
 
@@ -53,6 +55,7 @@ function App() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black font-sans">
       <AudioEngine onPermissionGranted={() => setAudioEnabled(true)} />
+      <CustomerChatbot />
 
       {/* The full-screen MapLibre instance */}
       <Map />
@@ -63,10 +66,10 @@ function App() {
         {/* Branding & Status */}
         <div className="bg-white/90 backdrop-blur-md px-4 py-3 rounded-2xl shadow-lg pointer-events-auto border border-gray-100 flex items-center gap-3">
           <div className="w-10 h-10 bg-[#e65100] rounded-full flex items-center justify-center shadow-inner">
-            <span className="text-white font-bold text-lg">Q4</span>
+            <span className="text-white font-bold text-lg">VK</span>
           </div>
           <div>
-            <h1 className="text-sm font-extrabold text-gray-900 leading-tight">Quan4 Culinary</h1>
+            <h1 className="text-sm font-extrabold text-gray-900 leading-tight">Khu Ẩm Thực Vĩnh Khánh</h1>
             <p className="text-xs font-semibold text-[#e65100]">
               {pois.length} POIs Loaded
             </p>
@@ -92,6 +95,8 @@ function App() {
               </svg>
             )}
           </button>
+
+
 
           <select 
             value={language}
