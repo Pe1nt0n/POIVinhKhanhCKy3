@@ -1,0 +1,66 @@
+using System.Text.Json;
+using Microsoft.Extensions.Options;
+using Quan4CulinaryTourism.Api.Common.Configuration;
+
+namespace Quan4CulinaryTourism.Api.Modules.AiAdvisor.Services;
+
+public class GeminiService : IAiProvider
+{
+    private readonly HttpClient _httpClient;
+    private readonly AiSettings _settings;
+    private readonly ILogger<GeminiService> _logger;
+
+    public GeminiService(HttpClient httpClient, IOptions<AiSettings> settings, ILogger<GeminiService> logger)
+    {
+        _httpClient = httpClient;
+        _settings = settings.Value;
+        _logger = logger;
+    }
+
+    public async Task<string> EnhanceDescriptionAsync(string name, string category, string rawDescription, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(_settings.ApiKey))
+        {
+            _logger.LogWarning("AI ApiKey is not configured. Falling back to raw description.");
+            return rawDescription;
+        }
+
+        var prompt = $"You are an expert food tourism copywriter. Enhance the following description for a culinary destination named '{name}' in the category '{category}'. " +
+                     $"Make it sound appetizing, culturally rich, and attractive to tourists visiting District 4, Ho Chi Minh City. " +
+                     $"Keep it concise (2-3 sentences max). Original description: '{rawDescription}'";
+
+        var requestBody = new
+        {
+            contents = new[]
+            {
+                new
+                {
+                    parts = new[] { new { text = prompt } }
+                }
+            }
+        };
+
+        var url = $"{_settings.Endpoint}?key={_settings.ApiKey}";
+
+        var response = await _httpClient.PostAsJsonAsync(url, requestBody, cancellationToken);
+        
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError("Gemini API failed with status {Status}: {Error}", response.StatusCode, errorBody);
+            throw new Exception("Failed to enhance description via AI provider.");
+        }
+
+        using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var jsonDoc = await JsonDocument.ParseAsync(responseStream, cancellationToken: cancellationToken);
+        
+        var candidates = jsonDoc.RootElement.GetProperty("candidates");
+        if (candidates.GetArrayLength() > 0)
+        {
+            var text = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
+            return text?.Trim() ?? rawDescription;
+        }
+
+        return rawDescription;
+    }
+}

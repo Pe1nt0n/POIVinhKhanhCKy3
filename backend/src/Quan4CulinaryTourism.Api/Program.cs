@@ -22,7 +22,8 @@ var config = builder.Configuration;
 builder.Services.Configure<MongoDbSettings>(config.GetSection(MongoDbSettings.SectionName));
 builder.Services.Configure<RedisSettings>(config.GetSection(RedisSettings.SectionName));
 builder.Services.Configure<JwtSettings>(config.GetSection(JwtSettings.SectionName));
-builder.Services.Configure<SecuritySettings>(config.GetSection(SecuritySettings.SectionName));
+builder.Services.Configure<SecuritySettings>(config.GetSection("SecuritySettings"));
+builder.Services.Configure<AiSettings>(config.GetSection("AiSettings"));
 
 // ============================================================================
 // 2. INFRASTRUCTURE SERVICES — Singleton database connections
@@ -53,7 +54,7 @@ builder.Services.AddScoped<AudioService>();
 builder.Services.AddHostedService<AudioWorkerService>();
 
 builder.Services.AddScoped<AiQuotaService>();
-builder.Services.AddScoped<IAiProvider, MockGeminiService>();
+builder.Services.AddHttpClient<IAiProvider, GeminiService>();
 
 // ============================================================================
 // 4. JWT AUTHENTICATION — Read token from HttpOnly cookie
