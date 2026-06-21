@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # MongoDB Replica Set (Bắt buộc cho Transactions)
+  mongodb:
+    image: mongo:6.0
+    container_name: quan4_mongodb
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - quan4_net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  # Container phụ: Đợi mongodb chạy xong và khởi tạo Replica Set
+  mongo-init:
+    image: mongo:6.0
+    container_name: quan4_mongo_init
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - quan4_net
+    command: >
+      mongosh --host mongodb:27017 --eval 
+      "rs.initiate({
+        _id: 'rs0',
+        members: [{ _id: 0, host: 'mongodb:27017' }]
+      })"
+
+  # Redis (Caching & Background Tasks)
+  redis:
+    image: redis:alpine
+    container_name: quan4_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - quan4_net
+
+  # Backend (C# .NET 8 API)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: quan4_backend
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      # Ghi đè cấu hình trong appsettings.json để kết nối các service nội bộ
+      - ASPNETCORE_ENVIRONMENT=Production
+      - MongoDB__ConnectionString=mongodb://mongodb:27017/?replicaSet=rs0
+      - Redis__ConnectionString=redis:6379
+      - AiSettings__ApiKey=${GEMINI_API_KEY:-}
+    networks:
+      - quan4_net
+
+  # Frontend (React Vite + Nginx Reverse Proxy)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: quan4_frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - quan4_net
+
+networks:
+  quan4_net:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  redis_data:
