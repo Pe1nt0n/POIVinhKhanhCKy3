@@ -8,6 +8,7 @@ using Quan4CulinaryTourism.Api.Common.Configuration;
 using Quan4CulinaryTourism.Api.Common.Infrastructure;
 using Quan4CulinaryTourism.Api.Common.Middleware;
 using Quan4CulinaryTourism.Api.Modules.Admin.Services;
+using Quan4CulinaryTourism.Api.Modules.Audio.Services;
 using Quan4CulinaryTourism.Api.Modules.Content.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +44,12 @@ builder.Services.AddScoped<OwnerRegistrationService>();
 builder.Services.AddSingleton<LocalMediaStorageService>();
 builder.Services.AddScoped<PoiService>();
 builder.Services.AddScoped<PoiLocalizationService>();
+
+builder.Services.AddSingleton<AudioTaskQueue>();
+builder.Services.AddSingleton<ITtsProvider, MockTtsProvider>();
+builder.Services.AddScoped<VoiceCatalogService>();
+builder.Services.AddScoped<AudioService>();
+builder.Services.AddHostedService<AudioWorkerService>();
 
 // ============================================================================
 // 4. JWT AUTHENTICATION — Read token from HttpOnly cookie
