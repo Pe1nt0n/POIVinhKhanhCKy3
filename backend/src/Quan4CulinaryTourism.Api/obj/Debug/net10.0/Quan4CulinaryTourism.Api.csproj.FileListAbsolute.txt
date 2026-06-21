@@ -51,3 +51,4 @@ D:\C#\backend\src\Quan4CulinaryTourism.Api\obj\Debug\net10.0\refint\Quan4Culinar
 D:\C#\backend\src\Quan4CulinaryTourism.Api\obj\Debug\net10.0\Quan4CulinaryTourism.Api.pdb
 D:\C#\backend\src\Quan4CulinaryTourism.Api\obj\Debug\net10.0\Quan4CulinaryTourism.Api.genruntimeconfig.cache
 D:\C#\backend\src\Quan4CulinaryTourism.Api\obj\Debug\net10.0\ref\Quan4CulinaryTourism.Api.dll
+D:\C#\backend\src\Quan4CulinaryTourism.Api\bin\Debug\net10.0\BCrypt-Net-Next.dll

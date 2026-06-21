@@ -7,6 +7,7 @@ using Quan4CulinaryTourism.Api.Common.Auth;
 using Quan4CulinaryTourism.Api.Common.Configuration;
 using Quan4CulinaryTourism.Api.Common.Infrastructure;
 using Quan4CulinaryTourism.Api.Common.Middleware;
+using Quan4CulinaryTourism.Api.Modules.Admin.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -18,6 +19,7 @@ var config = builder.Configuration;
 builder.Services.Configure<MongoDbSettings>(config.GetSection(MongoDbSettings.SectionName));
 builder.Services.Configure<RedisSettings>(config.GetSection(RedisSettings.SectionName));
 builder.Services.Configure<JwtSettings>(config.GetSection(JwtSettings.SectionName));
+builder.Services.Configure<SecuritySettings>(config.GetSection(SecuritySettings.SectionName));
 
 // ============================================================================
 // 2. INFRASTRUCTURE SERVICES — Singleton database connections
@@ -31,6 +33,11 @@ builder.Services.AddSingleton<RedisConnectionManager>();
 // ============================================================================
 
 builder.Services.AddSingleton<JwtTokenService>();
+builder.Services.AddSingleton<PiiEncryptionService>();
+builder.Services.AddScoped<RoleService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<OwnerRegistrationService>();
 
 // ============================================================================
 // 4. JWT AUTHENTICATION — Read token from HttpOnly cookie
@@ -160,6 +167,27 @@ app.UseAuthorization();
 
 // Map controllers
 app.MapControllers();
+
+// ============================================================================
+// DATABASE SEEDING
+// ============================================================================
+
+using (var scope = app.Services.CreateScope())
+{
+    var roleService = scope.ServiceProvider.GetRequiredService<Quan4CulinaryTourism.Api.Modules.Admin.Services.RoleService>();
+    var userService = scope.ServiceProvider.GetRequiredService<Quan4CulinaryTourism.Api.Modules.Admin.Services.UserService>();
+    
+    // Ensure default roles
+    await roleService.EnsureDefaultRolesAsync();
+    
+    // Ensure super_admin if configured
+    var superAdminUsername = config["SuperAdminBootstrap:Username"];
+    var superAdminPassword = config["SuperAdminBootstrap:Password"];
+    if (!string.IsNullOrEmpty(superAdminUsername) && !string.IsNullOrEmpty(superAdminPassword))
+    {
+        await userService.EnsureSuperAdminAsync(superAdminUsername, superAdminPassword);
+    }
+}
 
 // ============================================================================
 // STARTUP LOG

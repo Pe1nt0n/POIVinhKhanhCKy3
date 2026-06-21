@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Quan4CulinaryTourism.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fedc8b48b0bd6195cac43d3aa3d07e448c6fc75f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+81b7ac734982ddbf0cdc0aea43ed9b690d473c4c")]
 [assembly: System.Reflection.AssemblyProductAttribute("Quan4CulinaryTourism.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Quan4CulinaryTourism.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

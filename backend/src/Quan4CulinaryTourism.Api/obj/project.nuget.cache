@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "tL1y+4QvprQ=",
+  "dgSpecHash": "Tj9e0z4gHIE=",
   "success": true,
   "projectFilePath": "D:\\C#\\backend\\src\\Quan4CulinaryTourism.Api\\Quan4CulinaryTourism.Api.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\ACER\\.nuget\\packages\\bcrypt.net-next\\4.2.0\\bcrypt.net-next.4.2.0.nupkg.sha512",
     "C:\\Users\\ACER\\.nuget\\packages\\dnsclient\\1.6.1\\dnsclient.1.6.1.nupkg.sha512",
     "C:\\Users\\ACER\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\10.0.9\\microsoft.aspnetcore.authentication.jwtbearer.10.0.9.nupkg.sha512",
     "C:\\Users\\ACER\\.nuget\\packages\\microsoft.extensions.apidescription.server\\10.0.0\\microsoft.extensions.apidescription.server.10.0.0.nupkg.sha512",
