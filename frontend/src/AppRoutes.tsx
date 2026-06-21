@@ -7,6 +7,10 @@ import { OwnerRegister } from './pages/owner/OwnerRegister';
 import { OwnerLayout } from './layouts/OwnerLayout';
 import { OwnerDashboard } from './pages/owner/OwnerDashboard';
 import { PoiSubmissionForm } from './pages/owner/PoiSubmissionForm';
+import { AdminLayout } from './layouts/AdminLayout';
+import { AdminUsers } from './pages/admin/AdminUsers';
+import { AdminPois } from './pages/admin/AdminPois';
+import { AdminApprovals } from './pages/admin/AdminApprovals';
 import { useAuthStore } from './store/useAuthStore';
 
 export const AppRoutes: React.FC = () => {
@@ -26,8 +30,13 @@ export const AppRoutes: React.FC = () => {
 
         {/* Admin Protected Routes */}
         <Route element={<ProtectedRoute allowedRoles={['admin', 'super_admin']} />}>
-          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="/admin/dashboard" element={<div className="p-8 text-2xl font-bold">Admin Dashboard (Coming in Step 3)</div>} />
+          <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
+            <Route path="/admin/dashboard" element={<Navigate to="/admin/users" replace />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/pois" element={<AdminPois />} />
+            <Route path="/admin/approvals" element={<AdminApprovals />} />
+          </Route>
         </Route>
 
         {/* Owner Protected Routes */}

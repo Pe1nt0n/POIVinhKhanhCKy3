@@ -9,9 +9,9 @@ export const OwnerRegister: React.FC = () => {
     username: '',
     email: '',
     password: '',
-    ownerName: '',
-    phone: '',
-    idCard: ''
+    businessName: '',
+    businessAddress: '',
+    cccd: ''
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,8 +24,8 @@ export const OwnerRegister: React.FC = () => {
     setError(null);
 
     try {
-      // Assuming a public endpoint exists for this registration
-      const res = await fetch(`${API_BASE_URL}/api/v1/owner/register`, {
+      // Hits the OwnerAuthController endpoint in C# Backend
+      const res = await fetch(`${API_BASE_URL}/api/v1/admin/auth/register-owner`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -93,24 +93,24 @@ export const OwnerRegister: React.FC = () => {
               </div>
 
               <div className="sm:col-span-2 mt-4">
-                <h3 className="text-lg font-bold text-gray-900 border-b pb-2 mb-4">Thông tin Định danh (Bảo mật)</h3>
+                <h3 className="text-lg font-bold text-gray-900 border-b pb-2 mb-4">Thông tin Doanh nghiệp & Định danh</h3>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700">Họ và Tên chủ quán</label>
-                <input type="text" name="ownerName" required onChange={handleChange} className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-[#e65100] focus:border-[#e65100]" />
+                <label className="block text-sm font-bold text-gray-700">Tên Doanh nghiệp / Tên Quán</label>
+                <input type="text" name="businessName" required onChange={handleChange} className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-[#e65100] focus:border-[#e65100]" />
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700">CCCD / CMND</label>
-                <input type="text" name="idCard" required onChange={handleChange} className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-[#e65100] focus:border-[#e65100]" />
+                <label className="block text-sm font-bold text-gray-700">CCCD / CMND của Chủ quán</label>
+                <input type="text" name="cccd" required onChange={handleChange} className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-[#e65100] focus:border-[#e65100]" />
               </div>
-              <div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-bold text-gray-700">Địa chỉ Kinh doanh</label>
+                <input type="text" name="businessAddress" required onChange={handleChange} className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-[#e65100] focus:border-[#e65100]" />
+              </div>
+              <div className="sm:col-span-2">
                 <label className="block text-sm font-bold text-gray-700">Email liên hệ</label>
                 <input type="email" name="email" required onChange={handleChange} className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-[#e65100] focus:border-[#e65100]" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700">Số điện thoại</label>
-                <input type="tel" name="phone" required onChange={handleChange} className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-[#e65100] focus:border-[#e65100]" />
               </div>
             </div>
 
