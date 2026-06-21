@@ -8,6 +8,7 @@ using Quan4CulinaryTourism.Api.Common.Configuration;
 using Quan4CulinaryTourism.Api.Common.Infrastructure;
 using Quan4CulinaryTourism.Api.Common.Middleware;
 using Quan4CulinaryTourism.Api.Modules.Admin.Services;
+using Quan4CulinaryTourism.Api.Modules.AiAdvisor.Services;
 using Quan4CulinaryTourism.Api.Modules.Audio.Services;
 using Quan4CulinaryTourism.Api.Modules.Content.Services;
 
@@ -21,7 +22,8 @@ var config = builder.Configuration;
 builder.Services.Configure<MongoDbSettings>(config.GetSection(MongoDbSettings.SectionName));
 builder.Services.Configure<RedisSettings>(config.GetSection(RedisSettings.SectionName));
 builder.Services.Configure<JwtSettings>(config.GetSection(JwtSettings.SectionName));
-builder.Services.Configure<SecuritySettings>(config.GetSection(SecuritySettings.SectionName));
+builder.Services.Configure<SecuritySettings>(config.GetSection("SecuritySettings"));
+builder.Services.Configure<AiSettings>(config.GetSection("AiSettings"));
 
 // ============================================================================
 // 2. INFRASTRUCTURE SERVICES — Singleton database connections
@@ -50,6 +52,9 @@ builder.Services.AddSingleton<ITtsProvider, MockTtsProvider>();
 builder.Services.AddScoped<VoiceCatalogService>();
 builder.Services.AddScoped<AudioService>();
 builder.Services.AddHostedService<AudioWorkerService>();
+
+builder.Services.AddScoped<AiQuotaService>();
+builder.Services.AddHttpClient<IAiProvider, GeminiService>();
 
 // ============================================================================
 // 4. JWT AUTHENTICATION — Read token from HttpOnly cookie
