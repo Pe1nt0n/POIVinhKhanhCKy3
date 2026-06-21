@@ -3,6 +3,7 @@ import { usePoiStore } from './store/usePoiStore';
 import { Map } from './components/Map';
 import { AudioEngine } from './components/AudioEngine';
 import { AiEnhancer } from './components/AiEnhancer';
+import { CustomerChatbot } from './components/CustomerChatbot';
 
 function App() {
   const { 
@@ -57,6 +58,7 @@ function App() {
     <div className="relative w-screen h-screen overflow-hidden bg-black font-sans">
       <AudioEngine onPermissionGranted={() => setAudioEnabled(true)} />
       <AiEnhancer isOpen={isAiPanelOpen} onClose={() => setIsAiPanelOpen(false)} />
+      <CustomerChatbot />
 
       {/* The full-screen MapLibre instance */}
       <Map />

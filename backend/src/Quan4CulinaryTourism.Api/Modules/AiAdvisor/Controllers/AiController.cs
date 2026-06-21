@@ -69,4 +69,29 @@ public class AiController : ControllerBase
             return StatusCode(500, ApiResponse.Fail($"AI Provider failed: {ex.Message}"));
         }
     }
+
+    public record ChatRequest(string Message, string History);
+
+    /// <summary>
+    /// F-PUBLIC-12: Public AI Chatbot for Tourists.
+    /// </summary>
+    [HttpPost("chat")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Chat([FromBody] ChatRequest request)
+    {
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(SystemConstants.AiRequestTimeoutSeconds));
+            var answer = await _aiProvider.AnswerCustomerQueryAsync(request.Message, request.History, cts.Token);
+            return Ok(ApiResponse<object>.Ok(new { answer }));
+        }
+        catch (OperationCanceledException)
+        {
+            return StatusCode(504, ApiResponse.Fail("AI Provider timed out."));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ApiResponse.Fail($"AI Provider failed: {ex.Message}"));
+        }
+    }
 }
