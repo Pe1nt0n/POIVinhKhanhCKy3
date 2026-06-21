@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@turf/turf": "^7.3.5",
     "idb": "^8.0.0",
     "maplibre-gl": "^4.0.0",
     "pmtiles": "^3.0.0",
@@ -18,9 +19,9 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
+    "@types/geojson": "^7946.0.14",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@types/geojson": "^7946.0.14",
     "@vitejs/plugin-react": "^4.5.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.0.0",

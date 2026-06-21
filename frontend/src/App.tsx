@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usePoiStore } from './store/usePoiStore';
 import { Map } from './components/Map';
+import { AudioEngine } from './components/AudioEngine';
 
 function App() {
   const { 
@@ -9,8 +10,13 @@ function App() {
     initOfflineData, 
     syncWithServer,
     language,
-    setLanguage
+    setLanguage,
+    setUserLocation
   } = usePoiStore();
+
+  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [mockLat, setMockLat] = useState<number>(10.7616);
+  const [mockLng, setMockLng] = useState<number>(106.7029);
 
   useEffect(() => {
     initOfflineData();
@@ -40,8 +46,14 @@ function App() {
     });
   };
 
+  const handleTeleport = () => {
+    setUserLocation([mockLng, mockLat]);
+  };
+
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black font-sans">
+      <AudioEngine onPermissionGranted={() => setAudioEnabled(true)} />
+
       {/* The full-screen MapLibre instance */}
       <Map />
 
@@ -92,11 +104,45 @@ function App() {
         </div>
       </div>
 
-      {/* Bottom Floating Overlay (Debug Tool) */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
+      {/* Bottom Floating Overlay (Debug Tools) */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-auto flex flex-col items-center gap-3 w-11/12 max-w-sm">
+        
+        {/* Mock GPS Controller */}
+        {audioEnabled && (
+          <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-lg w-full flex flex-col gap-2 border border-gray-100">
+            <div className="flex justify-between text-xs font-bold text-gray-700 px-1">
+              <span>Mock GPS (Geofencing Test)</span>
+            </div>
+            <div className="flex gap-2">
+              <input 
+                type="number" 
+                step="0.0001"
+                value={mockLng}
+                onChange={e => setMockLng(parseFloat(e.target.value))}
+                className="w-1/2 bg-gray-100 rounded px-2 py-1 text-xs outline-none"
+                placeholder="Lng"
+              />
+              <input 
+                type="number" 
+                step="0.0001"
+                value={mockLat}
+                onChange={e => setMockLat(parseFloat(e.target.value))}
+                className="w-1/2 bg-gray-100 rounded px-2 py-1 text-xs outline-none"
+                placeholder="Lat"
+              />
+            </div>
+            <button 
+              onClick={handleTeleport}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
+            >
+              Teleport (Trigger 50m Check)
+            </button>
+          </div>
+        )}
+
         <button 
           onClick={addMockPoi}
-          className="bg-black/80 backdrop-blur-md text-white text-xs font-mono py-2 px-4 rounded-full shadow-lg hover:bg-black transition-colors"
+          className="bg-black/80 backdrop-blur-md text-white text-xs font-mono py-2 px-6 rounded-full shadow-lg hover:bg-black transition-colors border border-gray-800"
         >
           [DEBUG] Add Mock POI Marker
         </button>
