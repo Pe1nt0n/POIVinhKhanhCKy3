@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { usePoiStore } from './store/usePoiStore';
 import { Map } from './components/Map';
 import { AudioEngine } from './components/AudioEngine';
+import { AiEnhancer } from './components/AiEnhancer';
 
 function App() {
   const { 
@@ -15,6 +16,8 @@ function App() {
   } = usePoiStore();
 
   const [audioEnabled, setAudioEnabled] = useState(false);
+  const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
+  
   const [mockLat, setMockLat] = useState<number>(10.7616);
   const [mockLng, setMockLng] = useState<number>(106.7029);
 
@@ -53,6 +56,7 @@ function App() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black font-sans">
       <AudioEngine onPermissionGranted={() => setAudioEnabled(true)} />
+      <AiEnhancer isOpen={isAiPanelOpen} onClose={() => setIsAiPanelOpen(false)} />
 
       {/* The full-screen MapLibre instance */}
       <Map />
@@ -91,6 +95,14 @@ function App() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             )}
+          </button>
+
+          <button
+            onClick={() => setIsAiPanelOpen(true)}
+            className="bg-gray-900/90 backdrop-blur-md hover:bg-black text-white p-3 rounded-full shadow-lg transition-transform active:scale-95 border border-gray-700"
+            title="AI Admin Tools"
+          >
+            ✨
           </button>
 
           <select 
