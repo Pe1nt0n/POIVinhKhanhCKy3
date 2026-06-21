@@ -11,6 +11,7 @@ import { AdminLayout } from './layouts/AdminLayout';
 import { AdminUsers } from './pages/admin/AdminUsers';
 import { AdminPois } from './pages/admin/AdminPois';
 import { AdminApprovals } from './pages/admin/AdminApprovals';
+import { AdminAudioTasks } from './pages/admin/AdminAudioTasks';
 import { useAuthStore } from './store/useAuthStore';
 
 export const AppRoutes: React.FC = () => {
@@ -35,6 +36,7 @@ export const AppRoutes: React.FC = () => {
             <Route path="/admin/dashboard" element={<Navigate to="/admin/users" replace />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/pois" element={<AdminPois />} />
+            <Route path="/admin/audio-tasks" element={<AdminAudioTasks />} />
             <Route path="/admin/approvals" element={<AdminApprovals />} />
           </Route>
         </Route>
