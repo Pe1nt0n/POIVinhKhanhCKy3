@@ -1,0 +1,9 @@
+@baseUrl = http://localhost:5000
+
+### Health Check — Full
+GET {{baseUrl}}/api/v1/health
+Accept: application/json
+
+### Health Check — Ping
+GET {{baseUrl}}/api/v1/health/ping
+Accept: application/json
