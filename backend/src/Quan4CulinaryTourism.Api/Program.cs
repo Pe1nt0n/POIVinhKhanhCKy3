@@ -8,6 +8,7 @@ using Quan4CulinaryTourism.Api.Common.Configuration;
 using Quan4CulinaryTourism.Api.Common.Infrastructure;
 using Quan4CulinaryTourism.Api.Common.Middleware;
 using Quan4CulinaryTourism.Api.Modules.Admin.Services;
+using Quan4CulinaryTourism.Api.Modules.Content.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -38,6 +39,10 @@ builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<OwnerRegistrationService>();
+
+builder.Services.AddSingleton<LocalMediaStorageService>();
+builder.Services.AddScoped<PoiService>();
+builder.Services.AddScoped<PoiLocalizationService>();
 
 // ============================================================================
 // 4. JWT AUTHENTICATION — Read token from HttpOnly cookie
@@ -161,6 +166,9 @@ if (app.Environment.IsDevelopment())
 // CORS — must be before auth
 app.UseCors("FrontendPolicy");
 
+// Serve static files (for local media storage)
+app.UseStaticFiles();
+
 // Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
@@ -174,6 +182,9 @@ app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
+    var dbContext = scope.ServiceProvider.GetRequiredService<MongoDbContext>();
+    await dbContext.EnsureIndexesAsync();
+
     var roleService = scope.ServiceProvider.GetRequiredService<Quan4CulinaryTourism.Api.Modules.Admin.Services.RoleService>();
     var userService = scope.ServiceProvider.GetRequiredService<Quan4CulinaryTourism.Api.Modules.Admin.Services.UserService>();
     

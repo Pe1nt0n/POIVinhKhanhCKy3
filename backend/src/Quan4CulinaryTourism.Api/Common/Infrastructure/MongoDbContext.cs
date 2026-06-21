@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Quan4CulinaryTourism.Api.Common.Configuration;
+using Quan4CulinaryTourism.Api.Modules.Content.Entities;
 
 namespace Quan4CulinaryTourism.Api.Common.Infrastructure;
 
@@ -58,5 +59,27 @@ public class MongoDbContext
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// Ensures necessary indexes exist. Called during startup.
+    /// </summary>
+    public async Task EnsureIndexesAsync()
+    {
+        // 1. POI Location 2dsphere index
+        var poiCollection = GetCollection<Poi>("pois");
+        var poiIndexKeys = Builders<Poi>.IndexKeys.Geo2DSphere(p => p.Location);
+        var poiIndexModel = new CreateIndexModel<Poi>(poiIndexKeys);
+        await poiCollection.Indexes.CreateOneAsync(poiIndexModel);
+
+        // 2. POI Localization compound index
+        var locCollection = GetCollection<PoiLocalization>("poi_localizations");
+        var locIndexKeys = Builders<PoiLocalization>.IndexKeys
+            .Ascending(p => p.PoiId)
+            .Ascending(p => p.Lang);
+        var locIndexModel = new CreateIndexModel<PoiLocalization>(
+            locIndexKeys, 
+            new CreateIndexOptions { Unique = true });
+        await locCollection.Indexes.CreateOneAsync(locIndexModel);
     }
 }
