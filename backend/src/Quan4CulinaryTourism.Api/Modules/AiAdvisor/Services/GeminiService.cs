@@ -63,4 +63,52 @@ public class GeminiService : IAiProvider
 
         return rawDescription;
     }
+
+    public async Task<string> AnswerCustomerQueryAsync(string userMessage, string history, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(_settings.ApiKey))
+        {
+            _logger.LogWarning("AI ApiKey is not configured. Returning default message.");
+            return "Xin lỗi, hiện tại tính năng tư vấn AI đang tạm bảo trì. Vui lòng liên hệ hotline để được hỗ trợ.";
+        }
+
+        var prompt = $"You are a friendly customer support AI for Quan 4 Culinary Tourism. " +
+                     $"Context history: {history}. " +
+                     $"User message: {userMessage}. " +
+                     $"Reply in Vietnamese, concisely and helpfully.";
+
+        var requestBody = new
+        {
+            contents = new[]
+            {
+                new
+                {
+                    parts = new[] { new { text = prompt } }
+                }
+            }
+        };
+
+        var url = $"{_settings.Endpoint}?key={_settings.ApiKey}";
+
+        var response = await _httpClient.PostAsJsonAsync(url, requestBody, cancellationToken);
+        
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError("Gemini API failed with status {Status}: {Error}", response.StatusCode, errorBody);
+            throw new Exception("Failed to answer customer query via AI provider.");
+        }
+
+        using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var jsonDoc = await JsonDocument.ParseAsync(responseStream, cancellationToken: cancellationToken);
+        
+        var candidates = jsonDoc.RootElement.GetProperty("candidates");
+        if (candidates.GetArrayLength() > 0)
+        {
+            var text = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
+            return text?.Trim() ?? "Tôi không thể trả lời câu hỏi này.";
+        }
+
+        return "Xin lỗi, tôi chưa hiểu ý bạn lắm.";
+    }
 }
