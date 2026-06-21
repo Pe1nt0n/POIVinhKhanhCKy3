@@ -5,12 +5,12 @@ interface ChatMessage {
   text: string;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 export const CustomerChatbot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'ai', text: 'Chào bạn! Mình là Hướng dẫn viên Ảo. Mình có thể giúp gì cho chuyến đi ẩm thực của bạn tại Quận 4 hôm nay?' }
+    { role: 'ai', text: 'Chào bạn! Mình là Hướng dẫn viên Ảo. Mình có thể giúp gì cho chuyến đi ẩm thực của bạn tại Khu Ẩm Thực Vĩnh Khánh hôm nay?' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -67,11 +67,11 @@ export const CustomerChatbot: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start">
       
       {/* Chat Window */}
       {isOpen && (
-        <div className="mb-4 w-80 sm:w-96 h-[450px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden animate-fade-in origin-bottom-right transform transition-all">
+        <div className="mb-4 w-80 sm:w-96 h-[450px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden animate-fade-in origin-bottom-left transform transition-all">
           
           {/* Header */}
           <div className="bg-[#e65100] text-white p-4 flex justify-between items-center shadow-md z-10">
@@ -79,7 +79,7 @@ export const CustomerChatbot: React.FC = () => {
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-lg">🤖</div>
               <div>
                 <h3 className="font-bold text-sm leading-tight">Hướng dẫn viên Ảo</h3>
-                <p className="text-[10px] text-orange-200 uppercase tracking-wide">Quan4 Culinary AI</p>
+                <p className="text-[10px] text-orange-200 uppercase tracking-wide">Vinh Khanh AI</p>
               </div>
             </div>
             <button onClick={() => setIsOpen(false)} className="text-white hover:bg-white/20 p-1 rounded-full transition-colors">

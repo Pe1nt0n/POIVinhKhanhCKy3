@@ -61,7 +61,7 @@ export const usePoiStore = create<PoiState>((set) => ({
       }
 
       // Construct URL with updated_after for Delta Sync
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
       let url = `${baseUrl}/api/v1/poi/load-all`;
       if (lastUpdated) {
         url += `?updated_after=${encodeURIComponent(lastUpdated)}`;

@@ -74,7 +74,7 @@ export const AdminLayout: React.FC = () => {
       {/* Main Content */}
       <div className="flex-1 overflow-auto bg-gray-50/50">
         <header className="bg-white/80 backdrop-blur-md sticky top-0 h-16 border-b border-gray-200 flex items-center justify-between px-8 z-20">
-          <h2 className="text-lg font-bold text-gray-800">Quản trị Hệ thống Bản đồ Ẩm thực Quận 4</h2>
+          <h2 className="text-lg font-bold text-gray-800">Quản trị Hệ thống Bản đồ Khu Ẩm Thực Vĩnh Khánh</h2>
           <div className="flex items-center gap-4">
             <span className="flex h-3 w-3 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>

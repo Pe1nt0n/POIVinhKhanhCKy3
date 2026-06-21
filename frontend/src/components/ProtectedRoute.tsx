@@ -51,7 +51,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         <div className="text-6xl mb-4">⏳</div>
         <h1 className="text-2xl font-bold text-yellow-800">Tài khoản đang chờ duyệt</h1>
         <p className="text-yellow-600 mt-2 max-w-md">
-          Yêu cầu đăng ký Chủ quán của bạn đang được Ban quản trị Quận 4 xem xét. 
+          Yêu cầu đăng ký Chủ quán của bạn đang được Ban quản trị Khu Ẩm Thực Vĩnh Khánh xem xét. 
           Vui lòng quay lại sau khi nhận được email thông báo phê duyệt.
         </p>
       </div>

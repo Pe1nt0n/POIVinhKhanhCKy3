@@ -1,5 +1,5 @@
 # Stage 1: Build C# API
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy csproj and restore as distinct layers
@@ -16,7 +16,7 @@ FROM build AS publish
 RUN dotnet publish "Quan4CulinaryTourism.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Stage 2: Serve using ASP.NET Runtime (Alpine for small size)
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS final
 WORKDIR /app
 EXPOSE 8080
 

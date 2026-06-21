@@ -55,7 +55,7 @@ export const OwnerRegister: React.FC = () => {
           <div className="text-6xl mb-6">🎉</div>
           <h2 className="text-2xl font-black text-gray-900 mb-4">Đăng ký Thành Công!</h2>
           <p className="text-gray-600 mb-8 leading-relaxed">
-            Hồ sơ chủ quán của bạn đã được gửi đến Ban Quản Trị Quận 4. Quá trình kiểm duyệt có thể mất từ 1-2 ngày làm việc.
+            Hồ sơ chủ quán của bạn đã được gửi đến Ban Quản Trị Khu Ẩm Thực Vĩnh Khánh. Quá trình kiểm duyệt có thể mất từ 1-2 ngày làm việc.
           </p>
           <button 
             onClick={() => navigate('/admin/login')}
@@ -71,7 +71,7 @@ export const OwnerRegister: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12 sm:px-6 lg:px-8 font-sans">
       <div className="sm:mx-auto sm:w-full sm:max-w-xl text-center mb-10">
-        <h2 className="text-4xl font-black text-gray-900 tracking-tight">Hợp tác cùng Quận 4</h2>
+        <h2 className="text-4xl font-black text-gray-900 tracking-tight">Hợp tác cùng Khu Ẩm Thực Vĩnh Khánh</h2>
         <p className="mt-3 text-lg text-gray-600">Đăng ký trở thành Đối tác Ẩm thực chính thức</p>
       </div>
 

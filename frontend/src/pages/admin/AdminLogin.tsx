@@ -29,7 +29,7 @@ export const AdminLogin: React.FC = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <div className="w-20 h-20 bg-[#e65100] rounded-full mx-auto flex items-center justify-center shadow-lg mb-4">
-          <span className="text-white font-bold text-3xl">Q4</span>
+          <span className="text-white font-bold text-3xl">VK</span>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 tracking-tight">
           Quản trị Hệ thống
