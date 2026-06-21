@@ -46,6 +46,20 @@ export default defineConfig({
                 statuses: [0, 200]
               }
             }
+          },
+          {
+            urlPattern: /\.pmtiles$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'pmtiles-cache',
+              expiration: {
+                maxEntries: 5,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200, 206] // 206 Partial Content is critical for Range Requests
+              }
+            }
           }
         ]
       }

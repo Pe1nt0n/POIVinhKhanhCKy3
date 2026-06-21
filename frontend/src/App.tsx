@@ -1,12 +1,11 @@
 import { useEffect } from 'react';
 import { usePoiStore } from './store/usePoiStore';
+import { Map } from './components/Map';
 
 function App() {
   const { 
     pois, 
     isSyncing, 
-    lastSyncTime, 
-    error, 
     initOfflineData, 
     syncWithServer,
     language,
@@ -14,73 +13,95 @@ function App() {
   } = usePoiStore();
 
   useEffect(() => {
-    // Load data from IndexedDB instantly on startup
     initOfflineData();
   }, [initOfflineData]);
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 font-sans">
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-        <h1 className="text-3xl font-extrabold text-[#e65100] mb-2 tracking-tight">
-          Quan4 Culinary
-        </h1>
-        <p className="text-gray-500 mb-8 text-sm">Offline-First PWA Prototype</p>
+  // For testing offline sync without backend, you can mock adding a POI directly
+  const addMockPoi = () => {
+    usePoiStore.setState({
+      pois: [
+        ...pois, 
+        {
+          id: Date.now().toString(),
+          name: 'Ốc Oanh - Vinh Khanh',
+          category: 'Street Food',
+          location: { type: 'Point', coordinates: [106.7029, 10.7616] }, // D4 coords
+          address: 'Vinh Khanh, Q4',
+          price_range: '$$',
+          rating: 4.8,
+          priority: 1,
+          images: [],
+          owner_id: null,
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ]
+    });
+  };
 
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-orange-50 rounded-xl p-4 border border-orange-100">
-            <p className="text-xs text-orange-600 font-semibold uppercase tracking-wider mb-1">
-              Offline POIs
-            </p>
-            <p className="text-4xl font-black text-[#e65100]">
-              {pois.length}
-            </p>
+  return (
+    <div className="relative w-screen h-screen overflow-hidden bg-black font-sans">
+      {/* The full-screen MapLibre instance */}
+      <Map />
+
+      {/* Top Floating Overlay (Status & Sync) */}
+      <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-start pointer-events-none">
+        
+        {/* Branding & Status */}
+        <div className="bg-white/90 backdrop-blur-md px-4 py-3 rounded-2xl shadow-lg pointer-events-auto border border-gray-100 flex items-center gap-3">
+          <div className="w-10 h-10 bg-[#e65100] rounded-full flex items-center justify-center shadow-inner">
+            <span className="text-white font-bold text-lg">Q4</span>
           </div>
-          
-          <div className="bg-blue-50 rounded-xl p-4 border border-blue-100 flex flex-col justify-center">
-             <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider mb-2">
-              Language
+          <div>
+            <h1 className="text-sm font-extrabold text-gray-900 leading-tight">Quan4 Culinary</h1>
+            <p className="text-xs font-semibold text-[#e65100]">
+              {pois.length} POIs Loaded
             </p>
-            <select 
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="bg-white border border-blue-200 text-blue-800 text-sm rounded-lg focus:ring-blue-500 block w-full p-2 outline-none font-medium"
-            >
-              <option value="vi">🇻🇳 Tiếng Việt</option>
-              <option value="en">🇬🇧 English</option>
-            </select>
           </div>
         </div>
 
-        {error && (
-          <div className="mb-6 p-3 bg-red-50 text-red-700 text-sm rounded-lg text-left border border-red-200">
-            ⚠️ {error}
-          </div>
-        )}
-
-        <button
-          onClick={syncWithServer}
-          disabled={isSyncing}
-          className="w-full bg-[#e65100] hover:bg-[#ac1900] text-white font-bold py-3 px-4 rounded-xl shadow-md transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {isSyncing ? (
-            <>
-              <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        {/* Controls */}
+        <div className="flex flex-col gap-2 items-end pointer-events-auto">
+          <button
+            onClick={syncWithServer}
+            disabled={isSyncing}
+            className="bg-white/90 backdrop-blur-md hover:bg-white text-gray-800 p-3 rounded-full shadow-lg transition-transform active:scale-95 disabled:opacity-50 border border-gray-100"
+            title="Sync Data"
+          >
+            {isSyncing ? (
+              <svg className="animate-spin h-5 w-5 text-[#e65100]" viewBox="0 0 24 24" fill="none">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Syncing...
-            </>
-          ) : (
-            'Sync with Backend'
-          )}
-        </button>
+            ) : (
+              <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            )}
+          </button>
 
-        {lastSyncTime && (
-          <p className="mt-4 text-xs text-gray-400">
-            Last synced: {new Date(lastSyncTime).toLocaleTimeString()}
-          </p>
-        )}
+          <select 
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="bg-white/90 backdrop-blur-md text-sm font-semibold text-gray-800 py-2 px-3 rounded-xl shadow-lg border border-gray-100 outline-none cursor-pointer"
+          >
+            <option value="vi">🇻🇳</option>
+            <option value="en">🇬🇧</option>
+          </select>
+        </div>
       </div>
+
+      {/* Bottom Floating Overlay (Debug Tool) */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
+        <button 
+          onClick={addMockPoi}
+          className="bg-black/80 backdrop-blur-md text-white text-xs font-mono py-2 px-4 rounded-full shadow-lg hover:bg-black transition-colors"
+        >
+          [DEBUG] Add Mock POI Marker
+        </button>
+      </div>
+
     </div>
   );
 }
