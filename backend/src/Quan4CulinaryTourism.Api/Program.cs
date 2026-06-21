@@ -9,6 +9,7 @@ using Quan4CulinaryTourism.Api.Common.Infrastructure;
 using Quan4CulinaryTourism.Api.Common.Middleware;
 using Quan4CulinaryTourism.Api.Modules.Admin.Services;
 using Quan4CulinaryTourism.Api.Modules.AiAdvisor.Services;
+using Quan4CulinaryTourism.Api.Modules.Analytics.Services;
 using Quan4CulinaryTourism.Api.Modules.Audio.Services;
 using Quan4CulinaryTourism.Api.Modules.Content.Services;
 
@@ -55,6 +56,8 @@ builder.Services.AddHostedService<AudioWorkerService>();
 
 builder.Services.AddScoped<AiQuotaService>();
 builder.Services.AddHttpClient<IAiProvider, GeminiService>();
+
+builder.Services.AddScoped<AnalyticsService>();
 
 // ============================================================================
 // 4. JWT AUTHENTICATION — Read token from HttpOnly cookie
@@ -160,6 +163,9 @@ var app = builder.Build();
 
 // Global exception handling — must be first in pipeline
 app.UseMiddleware<GlobalExceptionMiddleware>();
+
+// Global Rate Limiting (Redis-based)
+app.UseMiddleware<RateLimitMiddleware>();
 
 // Request logging
 app.UseMiddleware<RequestLoggingMiddleware>();
