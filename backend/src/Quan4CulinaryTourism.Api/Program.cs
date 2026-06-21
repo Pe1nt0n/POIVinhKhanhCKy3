@@ -8,6 +8,7 @@ using Quan4CulinaryTourism.Api.Common.Configuration;
 using Quan4CulinaryTourism.Api.Common.Infrastructure;
 using Quan4CulinaryTourism.Api.Common.Middleware;
 using Quan4CulinaryTourism.Api.Modules.Admin.Services;
+using Quan4CulinaryTourism.Api.Modules.AiAdvisor.Services;
 using Quan4CulinaryTourism.Api.Modules.Audio.Services;
 using Quan4CulinaryTourism.Api.Modules.Content.Services;
 
@@ -50,6 +51,9 @@ builder.Services.AddSingleton<ITtsProvider, MockTtsProvider>();
 builder.Services.AddScoped<VoiceCatalogService>();
 builder.Services.AddScoped<AudioService>();
 builder.Services.AddHostedService<AudioWorkerService>();
+
+builder.Services.AddScoped<AiQuotaService>();
+builder.Services.AddScoped<IAiProvider, MockGeminiService>();
 
 // ============================================================================
 // 4. JWT AUTHENTICATION — Read token from HttpOnly cookie
