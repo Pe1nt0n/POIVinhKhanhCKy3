@@ -12,8 +12,12 @@ export const Map: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const markersRef = useRef<Record<string, Marker>>({});
+  const userMarkerRef = useRef<Marker | null>(null);
   
-  const pois = usePoiStore(state => state.pois);
+  const { pois, userLocation } = usePoiStore(state => ({
+    pois: state.pois,
+    userLocation: state.userLocation
+  }));
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
@@ -104,5 +108,25 @@ export const Map: React.FC = () => {
 
   }, [pois]);
 
-  return <div ref={mapContainerRef} className="w-full h-full bg-gray-100" />;
+  // Sync user location blue dot
+  useEffect(() => {
+    if (!mapRef.current || !userLocation) return;
+
+    if (!userMarkerRef.current) {
+      const el = document.createElement('div');
+      el.className = 'w-5 h-5 bg-blue-500 border-2 border-white rounded-full shadow-[0_0_15px_rgba(59,130,246,0.8)] relative';
+      // Add ping animation
+      const ping = document.createElement('div');
+      ping.className = 'absolute inset-0 w-full h-full bg-blue-400 rounded-full animate-ping opacity-75';
+      el.appendChild(ping);
+
+      userMarkerRef.current = new maplibregl.Marker({ element: el })
+        .setLngLat(userLocation)
+        .addTo(mapRef.current);
+    } else {
+      userMarkerRef.current.setLngLat(userLocation);
+    }
+  }, [userLocation]);
+
+  return <div ref={mapContainerRef} className="w-full h-full bg-[#e8e4db]" />;
 };

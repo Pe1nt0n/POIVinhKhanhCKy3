@@ -9,10 +9,18 @@ interface PoiState {
   lastSyncTime: string | null;
   error: string | null;
   
+  // Geofencing & Audio State
+  userLocation: [number, number] | null;
+  activeAudioPoi: string | null;
+  playedAudioSet: Set<string>;
+  
   // Actions
   setLanguage: (lang: string) => void;
   initOfflineData: () => Promise<void>;
   syncWithServer: () => Promise<void>;
+  setUserLocation: (lngLat: [number, number]) => void;
+  playPoiAudio: (poiId: string) => void;
+  clearActiveAudio: () => void;
 }
 
 export const usePoiStore = create<PoiState>((set, get) => ({
@@ -21,6 +29,10 @@ export const usePoiStore = create<PoiState>((set, get) => ({
   isSyncing: false,
   lastSyncTime: localStorage.getItem('lastSyncTime'),
   error: null,
+
+  userLocation: null,
+  activeAudioPoi: null,
+  playedAudioSet: new Set<string>(),
 
   setLanguage: (lang: string) => {
     localStorage.setItem('language', lang);
@@ -101,5 +113,24 @@ export const usePoiStore = create<PoiState>((set, get) => ({
       console.error('Sync failed:', err);
       set({ isSyncing: false, error: 'Failed to sync with server. Continuing in Offline Mode.' });
     }
+  },
+
+  setUserLocation: (lngLat: [number, number]) => {
+    set({ userLocation: lngLat });
+  },
+
+  playPoiAudio: (poiId: string) => {
+    set((state) => {
+      const newSet = new Set(state.playedAudioSet);
+      newSet.add(poiId);
+      return {
+        activeAudioPoi: poiId,
+        playedAudioSet: newSet
+      };
+    });
+  },
+
+  clearActiveAudio: () => {
+    set({ activeAudioPoi: null });
   }
 }));
