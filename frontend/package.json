@@ -9,8 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "idb": "^8.0.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
