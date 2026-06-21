@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../store/useAuthStore';
+import { useAuthStore } from '../store/useAuthStore';
 
 export const AdminLayout: React.FC = () => {
   const { adminInfo, logout } = useAuthStore();

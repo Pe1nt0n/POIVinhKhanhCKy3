@@ -23,7 +23,7 @@ interface PoiState {
   clearActiveAudio: () => void;
 }
 
-export const usePoiStore = create<PoiState>((set, get) => ({
+export const usePoiStore = create<PoiState>((set) => ({
   pois: [],
   language: localStorage.getItem('language') || 'vi',
   isSyncing: false,
