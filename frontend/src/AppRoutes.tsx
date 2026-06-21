@@ -4,6 +4,9 @@ import App from './App';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminLogin } from './pages/admin/AdminLogin';
 import { OwnerRegister } from './pages/owner/OwnerRegister';
+import { OwnerLayout } from './layouts/OwnerLayout';
+import { OwnerDashboard } from './pages/owner/OwnerDashboard';
+import { PoiSubmissionForm } from './pages/owner/PoiSubmissionForm';
 import { useAuthStore } from './store/useAuthStore';
 
 export const AppRoutes: React.FC = () => {
@@ -29,8 +32,11 @@ export const AppRoutes: React.FC = () => {
 
         {/* Owner Protected Routes */}
         <Route element={<ProtectedRoute allowedRoles={['poi_owner']} requireVerifiedOwner={true} />}>
-          <Route path="/owner" element={<Navigate to="/owner/dashboard" replace />} />
-          <Route path="/owner/dashboard" element={<div className="p-8 text-2xl font-bold">Owner Dashboard (Coming in Step 2)</div>} />
+          <Route element={<OwnerLayout />}>
+            <Route path="/owner" element={<Navigate to="/owner/dashboard" replace />} />
+            <Route path="/owner/dashboard" element={<OwnerDashboard />} />
+            <Route path="/owner/submissions/new" element={<PoiSubmissionForm />} />
+          </Route>
         </Route>
 
         {/* Fallback */}
