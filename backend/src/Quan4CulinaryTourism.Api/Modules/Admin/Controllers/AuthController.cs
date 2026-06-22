@@ -99,13 +99,14 @@ public class AuthController : ControllerBase
         if (user == null) return Unauthorized();
 
         var permissions = await _userService.GetUserPermissionsAsync(user);
+        var roleNames = await _userService.GetUserRoleNamesAsync(user);
 
         return Ok(ApiResponse<object>.Ok(new
         {
             id = user.Id,
             username = user.Username,
             email = user.Email,
-            role_ids = user.RoleIds,
+            role_ids = roleNames,
             permissions = permissions,
             is_poi_owner_verified = user.IsPoiOwnerVerified
         }));
