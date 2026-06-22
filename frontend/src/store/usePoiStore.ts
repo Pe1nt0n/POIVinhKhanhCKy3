@@ -62,10 +62,16 @@ export const usePoiStore = create<PoiState>((set) => ({
 
       // Construct URL with updated_after for Delta Sync
       const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-      let url = `${baseUrl}/api/v1/poi/load-all`;
+      const lang = localStorage.getItem('language') || 'vi';
+
+      const params = new URLSearchParams();
+      params.set('lang', lang);
+
       if (lastUpdated) {
-        url += `?updated_after=${encodeURIComponent(lastUpdated)}`;
+        params.set('updated_after', lastUpdated);
       }
+
+      const url = `${baseUrl}/api/v1/poi/load-all?${params.toString()}`;
 
       const response = await fetch(url, { headers });
 
@@ -82,8 +88,44 @@ export const usePoiStore = create<PoiState>((set) => ({
       }
 
       const responseData = await response.json();
-      // The API returns ApiResponse<IEnumerable<Poi>>
-      const fetchedPois: Poi[] = responseData.data;
+
+// API trả về: { data: { dataset_version, items } }
+// Frontend Map cần location dạng GeoJSON: { type: 'Point', coordinates: [lng, lat] }
+const rawItems = responseData?.data?.items ?? responseData?.data ?? [];
+
+const fetchedPois: Poi[] = rawItems.map((item: any) => {
+  const lng =
+    item.location?.lng ??
+    item.location?.coordinates?.[0] ??
+    item.Location?.lng ??
+    item.Location?.coordinates?.[0];
+
+  const lat =
+    item.location?.lat ??
+    item.location?.coordinates?.[1] ??
+    item.Location?.lat ??
+    item.Location?.coordinates?.[1];
+
+  return {
+    id: item.id ?? item.Id,
+    name: item.name ?? item.Name,
+    description: item.description ?? item.Description ?? "",
+    category: item.category ?? item.Category ?? "unknown",
+    location: {
+      type: "Point",
+      coordinates: [lng, lat],
+    },
+    address: item.address ?? item.Address ?? "",
+    price_range: item.price_range ?? item.priceRange ?? item.PriceRange ?? "$",
+    rating: item.rating ?? item.Rating ?? 0,
+    priority: item.priority ?? item.Priority ?? 0,
+    images: item.images ?? item.Images ?? [],
+    owner_id: item.owner_id ?? item.OwnerId ?? null,
+    is_active: item.is_active ?? item.IsActive ?? true,
+    created_at: item.created_at ?? item.CreatedAt ?? new Date().toISOString(),
+    updated_at: item.updated_at ?? item.UpdatedAt ?? new Date().toISOString(),
+  };
+});
 
       // Extract ETag
       const newETag = response.headers.get('ETag');

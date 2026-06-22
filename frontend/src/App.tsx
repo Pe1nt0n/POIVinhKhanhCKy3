@@ -17,13 +17,14 @@ function App() {
 
   const [audioEnabled, setAudioEnabled] = useState(false);
   
-  const [mockLat, setMockLat] = useState<number>(10.7616);
-  const [mockLng, setMockLng] = useState<number>(106.7029);
+  const [mockLat, setMockLat] = useState(10.75990);
+  const [mockLng, setMockLng] = useState(106.70590);
 
   useEffect(() => {
-    initOfflineData();
-  }, [initOfflineData]);
-
+    initOfflineData().then(() => {
+      syncWithServer();
+    });
+  }, [initOfflineData, syncWithServer]);
   // For testing offline sync without backend, you can mock adding a POI directly
   const addMockPoi = () => {
     usePoiStore.setState({
@@ -49,8 +50,13 @@ function App() {
   };
 
   const handleTeleport = () => {
-    setUserLocation([mockLng, mockLat]);
-  };
+  const lng = Number(mockLng);
+  const lat = Number(mockLat);
+
+  setUserLocation([lng, lat]);
+
+  console.log(`[MOCK GPS] Teleport tới: ${lng}, ${lat}`);
+};
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black font-sans">
@@ -140,7 +146,7 @@ function App() {
               onClick={handleTeleport}
               className="w-full bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
             >
-              Teleport (Trigger 50m Check)
+              Teleport 
             </button>
           </div>
         )}

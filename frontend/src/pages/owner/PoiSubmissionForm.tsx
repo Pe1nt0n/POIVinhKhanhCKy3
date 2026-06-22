@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 export const PoiSubmissionForm: React.FC = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
