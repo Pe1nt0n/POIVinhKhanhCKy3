@@ -19,7 +19,13 @@ public class MockTtsProvider : ITtsProvider
         if (string.IsNullOrWhiteSpace(text))
             throw new ArgumentException("Text cannot be empty");
 
-        // Return a dummy small MP3 file (ID3 header mock)
+        var path = Path.Combine(Directory.GetCurrentDirectory(), "dummy.mp3");
+        if (File.Exists(path))
+        {
+            return await File.ReadAllBytesAsync(path, cancellationToken);
+        }
+
+        // Fallback
         return new byte[] { 0x49, 0x44, 0x33, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
     }
 }

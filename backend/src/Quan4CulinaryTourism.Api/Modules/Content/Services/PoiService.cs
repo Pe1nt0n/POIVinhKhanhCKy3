@@ -52,6 +52,16 @@ public class PoiService
         return await _pois.Find(filter).Limit(limit).ToListAsync();
     }
 
+    public async Task<List<Poi>> GetPoisByOwnerIdAsync(string ownerId)
+    {
+        return await _pois.Find(p => p.OwnerId == ownerId).ToListAsync();
+    }
+
+    public async Task<List<Poi>> GetPendingAudioUpdatesAsync()
+    {
+        return await _pois.Find(p => p.AudioUpdateRequested == true).ToListAsync();
+    }
+
     public async Task<Poi?> GetByIdAsync(string id)
     {
         return await _pois.Find(p => p.Id == id).FirstOrDefaultAsync();

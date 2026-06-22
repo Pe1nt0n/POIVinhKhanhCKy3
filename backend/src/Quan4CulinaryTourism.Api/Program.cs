@@ -184,8 +184,18 @@ if (app.Environment.IsDevelopment())
 // CORS — must be before auth
 app.UseCors("FrontendPolicy");
 
+// Ensure wwwroot directory exists
+var webRootPath = app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+if (!Directory.Exists(webRootPath))
+{
+    Directory.CreateDirectory(webRootPath);
+}
 // Serve static files (for local media storage)
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(webRootPath),
+    RequestPath = ""
+});
 
 // Authentication & Authorization
 app.UseAuthentication();

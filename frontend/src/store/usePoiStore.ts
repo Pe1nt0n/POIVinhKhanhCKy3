@@ -67,9 +67,10 @@ export const usePoiStore = create<PoiState>((set) => ({
       const params = new URLSearchParams();
       params.set('lang', lang);
 
-      if (lastUpdated) {
-        params.set('updated_after', lastUpdated);
-      }
+      // Disable Delta Sync to handle hard deletes correctly
+      // if (lastUpdated) {
+      //   params.set('updated_after', lastUpdated);
+      // }
 
       const url = `${baseUrl}/api/v1/poi/load-all?${params.toString()}`;
 
@@ -121,6 +122,7 @@ const fetchedPois: Poi[] = rawItems.map((item: any) => {
     priority: item.priority ?? item.Priority ?? 0,
     images: item.images ?? item.Images ?? [],
     owner_id: item.owner_id ?? item.OwnerId ?? null,
+    audio_url: item.audio_url ?? item.AudioUrl ?? null,
     is_active: item.is_active ?? item.IsActive ?? true,
     created_at: item.created_at ?? item.CreatedAt ?? new Date().toISOString(),
     updated_at: item.updated_at ?? item.UpdatedAt ?? new Date().toISOString(),
@@ -133,15 +135,9 @@ const fetchedPois: Poi[] = rawItems.map((item: any) => {
         localStorage.setItem('poi_etag', newETag);
       }
 
-      if (!lastUpdated) {
-        // First time sync: Overwrite everything
-        await poiStorage.clear();
-        await poiStorage.putBulk(fetchedPois);
-      } else {
-        // Delta Sync: Upsert only changed POIs into IndexedDB
-        // Since we don't handle hard deletes in this MVP, we just putBulk
-        await poiStorage.putBulk(fetchedPois);
-      }
+      // Always clear and overwrite to handle hard deletes
+      await poiStorage.clear();
+      await poiStorage.putBulk(fetchedPois);
 
       // Update last sync timestamps
       const syncTime = new Date().toISOString();

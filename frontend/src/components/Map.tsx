@@ -94,8 +94,13 @@ export const Map: React.FC = () => {
         el.appendChild(inner);
         
         // Popup
+        const listenUrl = poi.audio_url ? `${window.location.origin}/listen/${poi.id}` : '';
+        const qrImgHtml = listenUrl 
+            ? `<div class="mt-2 text-center"><a href="${listenUrl}" target="_blank"><img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(listenUrl)}&color=e65100" alt="QR Code" class="mx-auto rounded border border-gray-100" /></a><span class="text-[10px] text-gray-500 mt-1 block font-semibold">Quét để nghe</span></div>`
+            : '';
+
         const popup = new maplibregl.Popup({ offset: 15, closeButton: false })
-          .setHTML(`<div class="p-2 font-sans"><strong class="text-[#e65100] block">${poi.name || 'POI'}</strong><span class="text-xs text-gray-500">${poi.category || 'Unknown'}</span></div>`);
+          .setHTML(`<div class="p-3 font-sans w-56"><strong class="text-[#e65100] block text-base leading-tight mb-1">${poi.name || 'POI'}</strong><span class="text-[11px] font-medium bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded uppercase tracking-wider inline-block mb-2">${poi.category || 'Unknown'}</span><p class="text-xs text-gray-700 line-clamp-4 leading-relaxed mb-2">${poi.description || ''}</p>${qrImgHtml}</div>`);
 
         const marker = new maplibregl.Marker({ element: el })
           .setLngLat(poi.location.coordinates)

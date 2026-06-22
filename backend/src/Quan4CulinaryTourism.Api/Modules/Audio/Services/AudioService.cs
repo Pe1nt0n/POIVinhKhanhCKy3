@@ -49,7 +49,17 @@ public class AudioService
         
         if (loc == null)
         {
-            throw new ArgumentException("Localization not found for the given POI and language.");
+            // Fallback to base POI
+            var poi = await _tasks.Database.GetCollection<Poi>("pois").Find(p => p.Id == poiId).FirstOrDefaultAsync();
+            if (poi == null) throw new ArgumentException("POI not found.");
+            
+            loc = new PoiLocalization
+            {
+                PoiId = poiId,
+                Lang = "vi",
+                Name = poi.Name,
+                Description = poi.Description
+            };
         }
 
         var textToSynthesize = $"{loc.Name}. {loc.Description}";
@@ -107,7 +117,16 @@ public class AudioService
 
             if (loc == null)
             {
-                throw new InvalidOperationException("Localization deleted before TTS could process.");
+                var poi = await _tasks.Database.GetCollection<Poi>("pois").Find(p => p.Id == task.PoiId).FirstOrDefaultAsync();
+                if (poi == null) throw new InvalidOperationException("POI not found before TTS could process.");
+                
+                loc = new PoiLocalization
+                {
+                    PoiId = task.PoiId,
+                    Lang = task.Lang,
+                    Name = poi.Name,
+                    Description = poi.Description
+                };
             }
 
             var text = $"{loc.Name}. {loc.Description}";
@@ -118,7 +137,7 @@ public class AudioService
             // Save to Media Storage
             using var ms = new MemoryStream(audioBytes);
             var formFile = new FormFileMock(ms, "audio.mp3", "audio/mpeg");
-            var url = await _mediaStorage.SavePoiImageAsync(formFile);
+            var url = await _mediaStorage.SaveAudioAsync(formFile);
 
             // Success
             task.Status = "done";
@@ -129,6 +148,13 @@ public class AudioService
             // Update Localization
             loc.AudioUrl = url;
             await _localizationService.UpsertLocalizationAsync(loc);
+
+            // Update Poi Status
+            var pois = _tasks.Database.GetCollection<Poi>("pois");
+            var update = Builders<Poi>.Update
+                .Set(p => p.AudioStatus, "published")
+                .Set(p => p.UpdatedAt, DateTime.UtcNow);
+            await pois.UpdateOneAsync(p => p.Id == task.PoiId, update, cancellationToken: cancellationToken);
 
             _logger.LogInformation("Successfully generated TTS for POI {PoiId} ({Lang}). URL: {Url}", task.PoiId, task.Lang, url);
         }

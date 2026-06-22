@@ -184,8 +184,13 @@ export const AdminAudioTasks: React.FC = () => {
                 {/* Success View */}
                 {task.status === 'done' && task.audioUrl && (
                   <div className="mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100 flex items-center justify-between">
-                    <p className="text-xs text-gray-600">URL: <a href={task.audioUrl} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">{task.audioUrl}</a></p>
-                    <button className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-1 px-2 rounded">Nghe thử</button>
+                    <p className="text-xs text-gray-600">URL: <a href={`${API_BASE_URL}${task.audioUrl}`} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">{task.audioUrl}</a></p>
+                    <button 
+                      onClick={() => new Audio(`${API_BASE_URL}${task.audioUrl}`).play()}
+                      className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-1 px-2 rounded"
+                    >
+                      Nghe thử
+                    </button>
                   </div>
                 )}
 

@@ -12,6 +12,7 @@ import { AdminUsers } from './pages/admin/AdminUsers';
 import { AdminPois } from './pages/admin/AdminPois';
 import { AdminApprovals } from './pages/admin/AdminApprovals';
 import { AdminAudioTasks } from './pages/admin/AdminAudioTasks';
+import { ListenPoi } from './pages/ListenPoi';
 import { useAuthStore } from './store/useAuthStore';
 
 export const AppRoutes: React.FC = () => {
@@ -26,6 +27,7 @@ export const AppRoutes: React.FC = () => {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<App />} />
+        <Route path="/listen/:poiId" element={<ListenPoi />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/register/owner" element={<OwnerRegister />} />
 

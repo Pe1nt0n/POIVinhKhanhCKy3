@@ -25,6 +25,7 @@ export interface Poi {
   // Base fields that might be mapped natively depending on the API design
   name?: string;
   description?: string;
+  audio_url?: string;
   
   // The localizations map returned by /api/v1/poi/load-all
   localizations?: Record<string, PoiLocalization>;
