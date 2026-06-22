@@ -108,6 +108,17 @@ public class UserService
         return primaryRole.Name;
     }
 
+    public async Task<List<string>> GetUserRoleNamesAsync(User user)
+    {
+        var roleNames = new List<string>();
+        foreach (var roleId in user.RoleIds)
+        {
+            var role = await _roleService.GetByIdAsync(roleId);
+            if (role != null) roleNames.Add(role.Name);
+        }
+        return roleNames;
+    }
+
     /// <summary>
     /// Ensures that the default superadmin user exists.
     /// Uses bootstrap credentials.

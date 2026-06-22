@@ -31,6 +31,14 @@ public class PoiService
     }
 
     /// <summary>
+    /// Gets all pending POIs (IsActive == false).
+    /// </summary>
+    public async Task<List<Poi>> GetPendingPoisAsync()
+    {
+        return await _pois.Find(p => p.IsActive == false).ToListAsync();
+    }
+
+    /// <summary>
     /// Geospatial query using 2dsphere index to find nearby POIs.
     /// </summary>
     public async Task<List<Poi>> GetNearbyAsync(double lng, double lat, double radiusMeters, int limit)
