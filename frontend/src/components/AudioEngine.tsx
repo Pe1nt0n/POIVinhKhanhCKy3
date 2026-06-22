@@ -1,14 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { usePoiStore } from '../store/usePoiStore';
 import { useGeolocation } from '../hooks/useGeolocation';
 import * as turf from '@turf/turf';
+import { trackEvent } from '../services/analytics';
 
 // Use 70 meters as the default geofence radius for better reliability in urban canyons
 const GEOFENCE_RADIUS_METERS = 70;
 
 // A simple public domain chime for testing (since backend hasn't generated real TTS mp3s yet)
-const MOCK_AUDIO_URL = 'https://actions.google.com/sounds/v1/alarms/spaceship_alarm.ogg';
-
 interface AudioEngineProps {
   onPermissionGranted: () => void;
 }
@@ -16,56 +15,171 @@ interface AudioEngineProps {
 export const AudioEngine: React.FC<AudioEngineProps> = ({ onPermissionGranted }) => {
   const [started, setStarted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const isAudioStartingRef = useRef(false);
+  const lastTriggeredPoiRef = useRef<string | null>(null);
+  const lastTriggeredAtRef = useRef(0);
   
   const location = useGeolocation();
-  const { pois, playedAudioSet, playPoiAudio, setUserLocation } = usePoiStore();
+  const {
+  pois,
+  playedAudioSet,
+  playPoiAudio,
+  setUserLocation,
+  userLocation
+} = usePoiStore();
+  const speakPoi = useCallback(async (poi: any) => {
+  if (isAudioStartingRef.current) {
+    console.log('[AUDIO] Đang chuẩn bị phát, bỏ qua lần gọi trùng.');
+    return;
+  }
 
+  isAudioStartingRef.current = true;
+
+  const audioUrl = poi.audio_url || '/audio/vk_intro.mp3';
+
+  console.log(`[AUDIO] Phát thuyết minh cho POI: ${poi.name}`);
+  console.log(`[AUDIO] URL: ${audioUrl}`);
+
+  try {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+
+    if (!audioRef.current) {
+      console.error('[AUDIO] audioRef chưa sẵn sàng.');
+      return;
+    }
+
+    const audio = audioRef.current;
+
+    audio.pause();
+    audio.currentTime = 0;
+    audio.src = audioUrl;
+    audio.load();
+
+    await audio.play();
+
+    console.log('[AUDIO] Đã phát file thuyết minh thành công.');
+
+    trackEvent('audio_play', poi.id, {
+      poi_name: poi.name,
+      audio_url: audioUrl,
+      source: 'geofence',
+    });
+  } catch (error: any) {
+    const errorText = String(error);
+
+    if (
+      error?.name === 'AbortError' ||
+      errorText.includes('AbortError') ||
+      errorText.includes('interrupted')
+    ) {
+      console.warn('[AUDIO] Bỏ qua AbortError do audio bị gọi quá nhanh.');
+      return;
+    }
+    console.error('[AUDIO] Không phát được file thuyết minh:', error);
+
+    trackEvent('audio_play_failed', poi.id, {
+      poi_name: poi.name,
+      audio_url: audioUrl,
+      error: String(error),
+      source: 'geofence',
+    });
+  } finally {
+    setTimeout(() => {
+      isAudioStartingRef.current = false;
+    }, 1000);
+  }
+}, []);
   // Sync GPS to global store so the map can render the blue dot
   useEffect(() => {
+  // Nếu đã có userLocation, tức là đang dùng Teleport/mock,
+  // không cho GPS thật ghi đè để demo ổn định.
+    if (userLocation) return;
+
     if (location.latitude && location.longitude) {
       setUserLocation([location.longitude, location.latitude]);
     }
-  }, [location.latitude, location.longitude, setUserLocation]);
+  }, [location.latitude, location.longitude, setUserLocation, userLocation]);
 
   // Geofencing calculation
-  useEffect(() => {
-    if (!started || !location.latitude || !location.longitude) return;
+useEffect(() => {
+  if (!started) return;
 
-    const userPt = turf.point([location.longitude, location.latitude]);
+  // Ưu tiên vị trí trong store.
+  // Vị trí này có thể đến từ GPS thật hoặc từ nút Mock GPS trong App.tsx.
+  const effectiveLng =
+    userLocation?.[0] ??
+    (location.longitude ? location.longitude : null);
 
-    for (const poi of pois) {
-      if (playedAudioSet.has(poi.id)) continue;
+  const effectiveLat =
+    userLocation?.[1] ??
+    (location.latitude ? location.latitude : null);
 
-      const poiPt = turf.point(poi.location.coordinates);
-      // turf.distance defaults to kilometers
-      const distanceKm = turf.distance(userPt, poiPt, { units: 'kilometers' });
-      const distanceMeters = distanceKm * 1000;
+  if (effectiveLng === null || effectiveLat === null) return;
 
-      if (distanceMeters <= GEOFENCE_RADIUS_METERS) {
-        console.log(`Entered Geofence for POI: ${poi.name}. Playing audio...`);
-        playPoiAudio(poi.id);
-        
-        if (audioRef.current) {
-          // In production, we would use: poi.localizations[language].audio_url
-          audioRef.current.src = MOCK_AUDIO_URL;
-          audioRef.current.play().catch(e => console.error("Autoplay blocked:", e));
-        }
-        
-        // Break after the first match to avoid playing overlapping audios
-        break;
-      }
-    }
-  }, [location.latitude, location.longitude, pois, playedAudioSet, playPoiAudio, started]);
+  const userPt = turf.point([effectiveLng, effectiveLat]);
+
+  // Sắp xếp POI theo priority cao trước
+  const sortedPois = [...pois].sort((a, b) => (b.priority || 0) - (a.priority || 0));
+
+  for (const poi of sortedPois) {
+    if (playedAudioSet.has(poi.id)) continue;
+    if (!poi.location?.coordinates) continue;
+
+    const poiPt = turf.point(poi.location.coordinates);
+
+    const distanceKm = turf.distance(userPt, poiPt, { units: 'kilometers' });
+    const distanceMeters = distanceKm * 1000;
+
+    console.log(
+      `[Geofence] ${poi.name}: ${distanceMeters.toFixed(1)}m`
+    );
+
+    if (distanceMeters <= GEOFENCE_RADIUS_METERS) {
+  const now = Date.now();
+
+  if (
+    lastTriggeredPoiRef.current === poi.id &&
+    now - lastTriggeredAtRef.current < 10000
+  ) {
+    console.log(`[Geofence] ${poi.name} vừa phát gần đây, bỏ qua.`);
+    break;
+  }
+
+  console.log(`Entered Geofence for POI: ${poi.name}. Playing audio...`);
+
+  lastTriggeredPoiRef.current = poi.id;
+  lastTriggeredAtRef.current = now;
+
+  trackEvent('poi_enter_geofence', poi.id, {
+    poi_name: poi.name,
+    distance_meters: Math.round(distanceMeters),
+    source: 'mock_or_gps',
+  });
+
+  playPoiAudio(poi.id);
+
+  speakPoi(poi);
+
+  break;
+  }
+  }
+}, [
+  started,
+  userLocation,
+  location.latitude,
+  location.longitude,
+  pois,
+  playedAudioSet,
+  playPoiAudio,
+  speakPoi
+]);
 
   const handleStart = () => {
     setStarted(true);
     onPermissionGranted();
-    
-    // Play a silent sound to unlock the AudioContext on iOS Safari / Chrome Autoplay Policy
-    if (audioRef.current) {
-      audioRef.current.src = 'data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';
-      audioRef.current.play().catch(() => {});
-    }
+    console.log('[AUDIO] Đã bật chế độ khám phá âm thanh.');
   };
 
   return (
