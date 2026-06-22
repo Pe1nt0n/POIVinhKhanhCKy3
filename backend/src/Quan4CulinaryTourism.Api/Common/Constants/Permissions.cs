@@ -119,7 +119,7 @@ public static class Permissions
     /// <summary>POI Owner permissions (priority 10)</summary>
     public static readonly string[] PoiOwnerPermissions =
     [
-        Poi.Read,
+        Poi.Read, Poi.Create,
         Menu.Read, Menu.Create, Menu.Update,
         Analytics.ViewOwn,
         Owner.Access, Owner.SubmitPoi, Owner.ManageOwnPoi

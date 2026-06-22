@@ -27,11 +27,23 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var users = await _userService.GetAllAsync();
-        // Hide sensitive fields like password hashes and refresh tokens before returning
-        var dto = users.Select(u => new
+        var dto = new List<object>();
+        
+        foreach (var u in users)
         {
-            u.Id, u.Username, u.Email, u.RoleIds, u.IsActive, u.IsPoiOwnerVerified, u.CreatedAt
-        });
+            var roleNames = await _userService.GetUserRoleNamesAsync(u);
+            dto.Add(new
+            {
+                u.Id, 
+                u.Username, 
+                u.Email, 
+                RoleIds = roleNames, 
+                u.IsActive, 
+                u.IsPoiOwnerVerified, 
+                u.CreatedAt
+            });
+        }
+        
         return Ok(ApiResponse<object>.Ok(dto));
     }
 

@@ -9,7 +9,7 @@ export const OwnerDashboard: React.FC = () => {
       <div className="bg-gradient-to-r from-[#e65100] to-orange-400 rounded-3xl p-8 text-white shadow-xl">
         <h1 className="text-3xl font-black mb-2">Xin chào, {adminInfo?.username}! 👋</h1>
         <p className="text-orange-100 max-w-2xl text-lg">
-          Chào mừng bạn đến với Cổng Quản lý Đối tác Khu Ẩm Thực Vĩnh Khánh. Tại đây, bạn có thể đăng ký quán mới, nhờ AI viết bài quảng cáo, và theo dõi lượng du khách tương tác.
+          Chào mừng bạn đến với Cổng Quản lý Đối tác Khu Ẩm Thực Vĩnh Khánh. Tại đây, bạn có thể đăng ký quán mới, và theo dõi lượng du khách tương tác.
         </p>
       </div>
 

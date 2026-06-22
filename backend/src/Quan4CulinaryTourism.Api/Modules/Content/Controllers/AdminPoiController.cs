@@ -35,23 +35,66 @@ public class AdminPoiController : ControllerBase
         return Ok(ApiResponse<object>.Ok(pois));
     }
 
+    public class GeoLocationDto
+    {
+        public string Type { get; set; } = "Point";
+        public double[] Coordinates { get; set; } = new double[2];
+    }
+
+    public class PoiDto
+    {
+        public string Name { get; set; } = null!;
+        public string Description { get; set; } = "";
+        public string Category { get; set; } = null!;
+        public string Address { get; set; } = "";
+        public GeoLocationDto Location { get; set; } = null!;
+        public bool IsActive { get; set; } = false;
+        public string? OwnerId { get; set; }
+    }
+
     [HttpPost]
     [RequirePermission(Permissions.Poi.Create)]
-    public async Task<IActionResult> Create([FromBody] Poi poi)
+    public async Task<IActionResult> Create([FromBody] PoiDto dto)
     {
+        var poi = new Poi
+        {
+            Name = dto.Name,
+            Description = dto.Description,
+            Category = dto.Category,
+            Address = dto.Address ?? "Quận 4",
+            Location = new MongoDB.Driver.GeoJsonObjectModel.GeoJsonPoint<MongoDB.Driver.GeoJsonObjectModel.GeoJson2DGeographicCoordinates>(
+                new MongoDB.Driver.GeoJsonObjectModel.GeoJson2DGeographicCoordinates(dto.Location.Coordinates[0], dto.Location.Coordinates[1])
+            ),
+            IsActive = dto.IsActive,
+            OwnerId = dto.OwnerId
+        };
         var created = await _poiService.CreateAsync(poi);
         return Ok(ApiResponse<object>.Ok(created, "POI created successfully."));
     }
 
     [HttpPut("{id}")]
     [RequirePermission(Permissions.Poi.Update)]
-    public async Task<IActionResult> Update(string id, [FromBody] Poi poi)
+    public async Task<IActionResult> Update(string id, [FromBody] PoiDto dto)
     {
         var existing = await _poiService.GetByIdAsync(id);
         if (existing == null) return NotFound(ApiResponse.Fail("POI not found."));
 
-        poi.Id = id; // Ensure ID doesn't change
-        await _poiService.UpdateAsync(id, poi);
+        existing.Name = dto.Name;
+        if (!string.IsNullOrEmpty(dto.Description)) existing.Description = dto.Description;
+        existing.Category = dto.Category;
+        if (!string.IsNullOrEmpty(dto.Address)) existing.Address = dto.Address;
+        
+        if (dto.Location != null && dto.Location.Coordinates != null && dto.Location.Coordinates.Length >= 2)
+        {
+            existing.Location = new MongoDB.Driver.GeoJsonObjectModel.GeoJsonPoint<MongoDB.Driver.GeoJsonObjectModel.GeoJson2DGeographicCoordinates>(
+                new MongoDB.Driver.GeoJsonObjectModel.GeoJson2DGeographicCoordinates(dto.Location.Coordinates[0], dto.Location.Coordinates[1])
+            );
+        }
+        
+        existing.IsActive = dto.IsActive;
+        if (dto.OwnerId != null) existing.OwnerId = dto.OwnerId;
+
+        await _poiService.UpdateAsync(id, existing);
         return Ok(ApiResponse.Ok("POI updated successfully."));
     }
 

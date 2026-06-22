@@ -26,7 +26,19 @@ export const AdminUsers: React.FC = () => {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Failed to fetch users');
-        setUsers(data.data);
+        
+        // Map snake_case to camelCase
+        const mappedUsers = data.data.map((u: any) => ({
+          id: u.id,
+          username: u.username,
+          email: u.email,
+          roleIds: u.role_ids || [],
+          isActive: u.is_active,
+          isPoiOwnerVerified: u.is_poi_owner_verified,
+          createdAt: u.created_at
+        }));
+        
+        setUsers(mappedUsers);
       } catch (err: any) {
         setError(err.message);
       } finally {

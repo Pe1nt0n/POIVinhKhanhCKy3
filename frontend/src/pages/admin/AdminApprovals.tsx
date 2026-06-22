@@ -34,11 +34,27 @@ export const AdminApprovals: React.FC = () => {
       ]);
       if (regRes.ok) {
         const regData = await regRes.json();
-        setRegistrations(regData.data);
+        const mappedRegs = regData.data.map((r: any) => ({
+          id: r.id,
+          userId: r.user_id,
+          username: r.username,
+          email: r.email,
+          businessName: r.business_name,
+          businessAddress: r.business_address,
+          status: r.status,
+          createdAt: r.created_at
+        }));
+        setRegistrations(mappedRegs);
       }
       if (poiRes.ok) {
         const poiData = await poiRes.json();
-        setPois(poiData.data);
+        const mappedPois = poiData.data.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          ownerId: p.owner_id
+        }));
+        setPois(mappedPois);
       }
     } catch (e) {
       console.error("Fetch approvals failed", e);

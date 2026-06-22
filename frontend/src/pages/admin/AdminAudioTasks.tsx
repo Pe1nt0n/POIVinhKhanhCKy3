@@ -26,7 +26,17 @@ export const AdminAudioTasks: React.FC = () => {
       });
       if (res.ok) {
         const data = await res.json();
-        setTasks(data.data);
+        const mappedTasks = data.data.map((t: any) => ({
+          id: t.id,
+          poiId: t.poi_id,
+          lang: t.lang,
+          status: t.status,
+          progress: t.progress,
+          audioUrl: t.audio_url,
+          error: t.error,
+          createdAt: t.created_at
+        }));
+        setTasks(mappedTasks);
       }
     } catch (err) {
       console.error('Polling failed:', err);
@@ -49,8 +59,18 @@ export const AdminAudioTasks: React.FC = () => {
 
       sse.onmessage = (event) => {
         try {
-          const updatedTasks = JSON.parse(event.data);
-          if (isMounted) setTasks(updatedTasks);
+          const rawTasks = JSON.parse(event.data);
+          const mappedTasks = rawTasks.map((t: any) => ({
+            id: t.id,
+            poiId: t.poi_id,
+            lang: t.lang,
+            status: t.status,
+            progress: t.progress,
+            audioUrl: t.audio_url,
+            error: t.error,
+            createdAt: t.created_at
+          }));
+          if (isMounted) setTasks(mappedTasks);
         } catch (e) {
           console.error('Invalid SSE payload', e);
         }

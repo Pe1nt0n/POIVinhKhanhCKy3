@@ -21,9 +21,9 @@ public class RateLimitMiddleware
 
     public async Task InvokeAsync(HttpContext context, RedisConnectionManager redisManager)
     {
-        // Bypass rate limiting for internal/static/swagger routes and OPTIONS preflight
+        // Only apply rate limiting to on-demand translation endpoints
         if (context.Request.Method == HttpMethods.Options || 
-            !context.Request.Path.StartsWithSegments("/api"))
+            !context.Request.Path.StartsWithSegments("/api/v1/content/translate"))
         {
             await _next(context);
             return;

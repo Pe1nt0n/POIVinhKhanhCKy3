@@ -87,7 +87,11 @@ export const Map: React.FC = () => {
       if (!currentMarkers[poi.id]) {
         // Create custom marker element using Tailwind
         const el = document.createElement('div');
-        el.className = 'w-6 h-6 bg-[#e65100] border-2 border-white rounded-full shadow-lg cursor-pointer transform hover:scale-110 transition-transform';
+        el.className = 'cursor-pointer';
+        
+        const inner = document.createElement('div');
+        inner.className = 'w-6 h-6 bg-[#e65100] border-2 border-white rounded-full shadow-lg transform hover:scale-110 transition-transform';
+        el.appendChild(inner);
         
         // Popup
         const popup = new maplibregl.Popup({ offset: 15, closeButton: false })
