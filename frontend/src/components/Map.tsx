@@ -96,7 +96,18 @@ export const Map: React.FC = () => {
         // Popup
         const listenUrl = poi.audio_url ? `${window.location.origin}/listen/${poi.id}` : '';
         const qrImgHtml = listenUrl 
-            ? `<div class="mt-2 text-center"><a href="${listenUrl}" target="_blank"><img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(listenUrl)}&color=e65100" alt="QR Code" class="mx-auto rounded border border-gray-100" /></a><span class="text-[10px] text-gray-500 mt-1 block font-semibold">Quét để nghe</span></div>`
+            ? `<div class="mt-3 text-center">
+                 <div class="hidden sm:block">
+                   <a href="${listenUrl}" target="_blank">
+                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(listenUrl)}&color=e65100" alt="QR Code" class="mx-auto rounded border border-gray-100" />
+                   </a>
+                   <span class="text-[10px] text-gray-500 mt-1 block font-semibold mb-3">Quét bằng điện thoại để nghe</span>
+                 </div>
+                 <a href="${listenUrl}" target="_blank" class="block w-full py-2 bg-[#e65100] text-white text-xs font-bold rounded shadow hover:bg-[#ac1900] transition-colors flex items-center justify-center gap-1">
+                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                   Nghe Thuyết Minh
+                 </a>
+               </div>`
             : '';
 
         const popup = new maplibregl.Popup({ offset: 15, closeButton: false })
