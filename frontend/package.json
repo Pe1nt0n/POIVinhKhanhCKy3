@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@turf/turf": "^7.3.5",
+    "html5-qrcode": "^2.3.8",
     "idb": "^8.0.0",
     "maplibre-gl": "^4.0.0",
     "pmtiles": "^3.0.0",
