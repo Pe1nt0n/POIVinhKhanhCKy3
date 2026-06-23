@@ -37,6 +37,7 @@ export const usePoiStore = create<PoiState>((set) => ({
   setLanguage: (lang: string) => {
     localStorage.setItem('language', lang);
     set({ language: lang });
+    usePoiStore.getState().syncWithServer();
   },
 
   initOfflineData: async () => {

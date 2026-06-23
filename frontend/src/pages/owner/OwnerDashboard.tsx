@@ -23,6 +23,9 @@ export const OwnerDashboard: React.FC = () => {
   const [newDesc, setNewDesc] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Stats State
+  const [stats, setStats] = useState({ audio_plays: 0, average_rating: 0 });
+
   const fetchMyPois = async () => {
     setLoading(true);
     try {
@@ -38,8 +41,27 @@ export const OwnerDashboard: React.FC = () => {
     }
   };
 
+  const fetchStats = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/owner/poi/stats`, { credentials: 'include' });
+      if (res.ok) {
+        const json = await res.json();
+        setStats({
+          audio_plays: json.data?.audio_plays || 0,
+          average_rating: json.data?.average_rating || 0
+        });
+      }
+    } catch (e) {
+      console.error('Failed to fetch stats', e);
+    }
+  };
+
   useEffect(() => {
     fetchMyPois();
+    fetchStats();
+    // Poll stats every 10 seconds for real-time updates
+    const interval = setInterval(fetchStats, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleOpenEdit = (poi: MyPoi) => {
@@ -91,20 +113,19 @@ export const OwnerDashboard: React.FC = () => {
           <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center text-2xl mb-4">🏪</div>
           <h3 className="text-gray-500 text-sm font-bold uppercase">Quán của bạn</h3>
           <p className="text-3xl font-black text-gray-900 mt-1">{activeCount}</p>
-          <p className="text-xs text-gray-400 mt-2">Đang chờ duyệt: {pendingCount}</p>
         </div>
         
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
           <div className="w-12 h-12 bg-green-50 text-green-500 rounded-xl flex items-center justify-center text-2xl mb-4">🎧</div>
           <h3 className="text-gray-500 text-sm font-bold uppercase">Lượt nghe Audio</h3>
-          <p className="text-3xl font-black text-gray-900 mt-1">--</p>
+          <p className="text-3xl font-black text-gray-900 mt-1">{stats.audio_plays}</p>
           <p className="text-xs text-gray-400 mt-2">Cập nhật theo thời gian thực</p>
         </div>
 
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
           <div className="w-12 h-12 bg-purple-50 text-purple-500 rounded-xl flex items-center justify-center text-2xl mb-4">⭐</div>
           <h3 className="text-gray-500 text-sm font-bold uppercase">Điểm đánh giá</h3>
-          <p className="text-3xl font-black text-gray-900 mt-1">--</p>
+          <p className="text-3xl font-black text-gray-900 mt-1">{stats.average_rating.toFixed(1)}</p>
           <p className="text-xs text-gray-400 mt-2">Dựa trên phản hồi từ du khách</p>
         </div>
       </div>

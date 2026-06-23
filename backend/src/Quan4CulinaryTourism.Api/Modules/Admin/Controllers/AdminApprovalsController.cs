@@ -16,17 +16,20 @@ public class AdminApprovalsController : ControllerBase
     private readonly PoiService _poiService;
     private readonly UserService _userService;
     private readonly Quan4CulinaryTourism.Api.Modules.Audio.Services.AudioService _audioService;
+    private readonly TranslationTaskQueue _translationQueue;
 
     public AdminApprovalsController(
         OwnerRegistrationService registrationService, 
         PoiService poiService,
         UserService userService,
-        Quan4CulinaryTourism.Api.Modules.Audio.Services.AudioService audioService)
+        Quan4CulinaryTourism.Api.Modules.Audio.Services.AudioService audioService,
+        TranslationTaskQueue translationQueue)
     {
         _registrationService = registrationService;
         _poiService = poiService;
         _userService = userService;
         _audioService = audioService;
+        _translationQueue = translationQueue;
     }
 
     public record ApprovalActionRequest(string? Note);
@@ -115,7 +118,10 @@ public class AdminApprovalsController : ControllerBase
         poi.IsActive = true;
         await _poiService.UpdateAsync(id, poi);
 
-        return Ok(ApiResponse.Ok("POI approved and published."));
+        // Queue translation task
+        await _translationQueue.EnqueueAsync(id);
+
+        return Ok(ApiResponse.Ok("POI approved and published. Background translation started."));
     }
 
     [HttpPost("pois/{id}/reject")]
@@ -157,10 +163,13 @@ public class AdminApprovalsController : ControllerBase
 
         await _poiService.UpdateAsync(id, poi);
 
-        // Queue TTS task
+        // Queue TTS task for Vietnamese
         await _audioService.EnqueueTaskAsync(id, "vi");
 
-        return Ok(ApiResponse.Ok("Audio update approved. Description updated and TTS task queued."));
+        // Queue translation task (and TTS for other languages can be added later)
+        await _translationQueue.EnqueueAsync(id);
+
+        return Ok(ApiResponse.Ok("Audio update approved. Description updated, translation queued, and TTS task queued."));
     }
 
     [HttpPost("audio-updates/{id}/reject")]

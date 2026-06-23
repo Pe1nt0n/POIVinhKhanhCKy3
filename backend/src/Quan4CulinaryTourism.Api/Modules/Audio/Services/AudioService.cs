@@ -38,6 +38,11 @@ public class AudioService
         return await _tasks.Find(_ => true).SortByDescending(t => t.CreatedAt).ToListAsync();
     }
 
+    public async Task DeleteTaskAsync(string taskId)
+    {
+        await _tasks.DeleteOneAsync(t => t.Id == taskId);
+    }
+
     /// <summary>
     /// Creates a new TTS task and enqueues it for background processing.
     /// </summary>

@@ -111,4 +111,50 @@ public class GeminiService : IAiProvider
 
         return "Xin lỗi, tôi chưa hiểu ý bạn lắm.";
     }
+
+    public async Task<string> TranslateAsync(string text, string targetLanguage, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(_settings.ApiKey))
+        {
+            _logger.LogWarning("AI ApiKey is not configured. Falling back to original text.");
+            return text;
+        }
+
+        var prompt = $"Translate the following text into the language code '{targetLanguage}' (e.g. 'en' for English, 'zh' for Chinese, 'fr' for French, 'ja' for Japanese, 'ko' for Korean). " +
+                     $"Provide ONLY the translated text without any explanation, markdown, or quotation marks.\n\nOriginal text: {text}";
+
+        var requestBody = new
+        {
+            contents = new[]
+            {
+                new
+                {
+                    parts = new[] { new { text = prompt } }
+                }
+            }
+        };
+
+        var url = $"{_settings.Endpoint}?key={_settings.ApiKey}";
+
+        var response = await _httpClient.PostAsJsonAsync(url, requestBody, cancellationToken);
+        
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError("Gemini API failed with status {Status}: {Error}", response.StatusCode, errorBody);
+            throw new Exception("Failed to translate text via AI provider.");
+        }
+
+        using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var jsonDoc = await JsonDocument.ParseAsync(responseStream, cancellationToken: cancellationToken);
+        
+        var candidates = jsonDoc.RootElement.GetProperty("candidates");
+        if (candidates.GetArrayLength() > 0)
+        {
+            var translated = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
+            return translated?.Trim() ?? text;
+        }
+
+        return text;
+    }
 }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Quan4CulinaryTourism.Api.Common.Auth;
 using Quan4CulinaryTourism.Api.Common.Constants;
 using Quan4CulinaryTourism.Api.Common.Models;
@@ -56,6 +57,8 @@ public class AdminPoiController : ControllerBase
     [RequirePermission(Permissions.Poi.Create)]
     public async Task<IActionResult> Create([FromBody] PoiDto dto)
     {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
         var poi = new Poi
         {
             Name = dto.Name,
@@ -66,7 +69,7 @@ public class AdminPoiController : ControllerBase
                 new MongoDB.Driver.GeoJsonObjectModel.GeoJson2DGeographicCoordinates(dto.Location.Coordinates[0], dto.Location.Coordinates[1])
             ),
             IsActive = dto.IsActive,
-            OwnerId = dto.OwnerId
+            OwnerId = dto.OwnerId ?? currentUserId
         };
         var created = await _poiService.CreateAsync(poi);
         return Ok(ApiResponse<object>.Ok(created, "POI created successfully."));

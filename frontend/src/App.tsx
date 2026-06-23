@@ -109,8 +109,12 @@ function App() {
             onChange={(e) => setLanguage(e.target.value)}
             className="bg-white/90 backdrop-blur-md text-sm font-semibold text-gray-800 py-2 px-3 rounded-xl shadow-lg border border-gray-100 outline-none cursor-pointer"
           >
-            <option value="vi">🇻🇳</option>
-            <option value="en">🇬🇧</option>
+            <option value="vi">🇻🇳 Tiếng Việt</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="zh">🇨🇳 中文</option>
+            <option value="ja">🇯🇵 日本語</option>
+            <option value="ko">🇰🇷 한국어</option>
+            <option value="fr">🇫🇷 Français</option>
           </select>
         </div>
       </div>

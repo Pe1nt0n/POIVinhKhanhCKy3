@@ -49,10 +49,12 @@ builder.Services.AddScoped<PoiService>();
 builder.Services.AddScoped<PoiLocalizationService>();
 
 builder.Services.AddSingleton<AudioTaskQueue>();
+builder.Services.AddSingleton<TranslationTaskQueue>();
 builder.Services.AddSingleton<ITtsProvider, MockTtsProvider>();
 builder.Services.AddScoped<VoiceCatalogService>();
 builder.Services.AddScoped<AudioService>();
 builder.Services.AddHostedService<AudioWorkerService>();
+builder.Services.AddHostedService<TranslationWorkerService>();
 
 builder.Services.AddScoped<AiQuotaService>();
 builder.Services.AddHttpClient<IAiProvider, GeminiService>();

@@ -23,4 +23,9 @@ public class MockGeminiService : IAiProvider
         await Task.Delay(1000, cancellationToken);
         return $"[MOCK AI] Xin chào! Đây là câu trả lời mẫu cho câu hỏi: \"{userMessage}\". Bạn nên thử Ốc Oanh hoặc Phá Lấu Cô Oanh ở Quận 4 nhé!";
     }
+
+    public Task<string> TranslateAsync(string text, string targetLanguage, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult($"[MOCK TRANSLATION {targetLanguage.ToUpper()}] {text}");
+    }
 }

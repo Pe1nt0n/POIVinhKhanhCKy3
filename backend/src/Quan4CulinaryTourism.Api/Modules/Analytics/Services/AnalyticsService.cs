@@ -44,4 +44,17 @@ public class AnalyticsService
             audio_plays_today = audioPlaysToday
         };
     }
+
+    public async Task<long> GetAudioPlaysForPoisAsync(List<string> poiIds)
+    {
+        if (poiIds == null || !poiIds.Any()) return 0;
+
+        var builder = Builders<AnalyticsEvent>.Filter;
+        var filter = builder.And(
+            builder.Eq(x => x.EventType, "audio_play"),
+            builder.In(x => x.PoiId, poiIds)
+        );
+
+        return await _events.CountDocumentsAsync(filter);
+    }
 }

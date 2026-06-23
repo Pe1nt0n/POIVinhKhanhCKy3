@@ -28,7 +28,7 @@ public class PublicPoiController : ControllerBase
     public async Task<IActionResult> LoadAll([FromQuery] string lang = "vi", [FromQuery] DateTime? updated_after = null)
     {
         var datasetVersion = await _poiService.GetCurrentDatasetVersionAsync();
-        var currentEtag = $"W/\"{datasetVersion.Version}\"";
+        var currentEtag = $"W/\"{datasetVersion.Version}-{lang}\"";
 
         // Check HTTP 304 Cache Valid
         if (Request.Headers.TryGetValue("If-None-Match", out var clientEtag))
