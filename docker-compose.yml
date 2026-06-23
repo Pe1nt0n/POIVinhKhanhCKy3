@@ -62,6 +62,8 @@ services:
       - MongoDB__ConnectionString=mongodb://mongodb:27017/?replicaSet=rs0
       - Redis__ConnectionString=redis:6379
       - AiSettings__ApiKey=${GEMINI_API_KEY:-}
+    volumes:
+      - backend_media:/app/media
     networks:
       - quan4_net
 
@@ -85,3 +87,4 @@ networks:
 volumes:
   mongodb_data:
   redis_data:
+  backend_media:

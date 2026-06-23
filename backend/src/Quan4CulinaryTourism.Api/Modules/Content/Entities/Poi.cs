@@ -16,6 +16,12 @@ public class Poi
     [BsonElement("description")]
     public string Description { get; set; } = null!;
 
+    [BsonElement("draft_description")]
+    public string? DraftDescription { get; set; }
+
+    [BsonElement("audio_update_requested")]
+    public bool AudioUpdateRequested { get; set; } = false;
+
     [BsonElement("category")]
     public string Category { get; set; } = null!;
 

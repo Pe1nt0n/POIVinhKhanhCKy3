@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { usePoiStore } from './store/usePoiStore';
 import { Map } from './components/Map';
 import { AudioEngine } from './components/AudioEngine';
 import { CustomerChatbot } from './components/CustomerChatbot';
+import { QRScanner } from './pages/QRScanner';
+import { PoiSubmissionForm } from './pages/PoiSubmissionForm';
 
 function App() {
   const { 
@@ -109,8 +112,12 @@ function App() {
             onChange={(e) => setLanguage(e.target.value)}
             className="bg-white/90 backdrop-blur-md text-sm font-semibold text-gray-800 py-2 px-3 rounded-xl shadow-lg border border-gray-100 outline-none cursor-pointer"
           >
-            <option value="vi">🇻🇳</option>
-            <option value="en">🇬🇧</option>
+            <option value="vi">🇻🇳 Tiếng Việt</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="zh">🇨🇳 中文</option>
+            <option value="ja">🇯🇵 日本語</option>
+            <option value="ko">🇰🇷 한국어</option>
+            <option value="fr">🇫🇷 Français</option>
           </select>
         </div>
       </div>
@@ -151,11 +158,15 @@ function App() {
           </div>
         )}
 
+        {/* Scan QR Button */}
         <button 
-          onClick={addMockPoi}
-          className="bg-black/80 backdrop-blur-md text-white text-xs font-mono py-2 px-6 rounded-full shadow-lg hover:bg-black transition-colors border border-gray-800"
+          onClick={() => window.location.href = '/scan'}
+          className="bg-gradient-to-r from-[#e65100] to-orange-500 text-white font-bold py-3 px-8 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 border-2 border-white mb-2"
         >
-          [DEBUG] Add Mock POI Marker
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+          </svg>
+          Quét QR Ngay
         </button>
       </div>
 

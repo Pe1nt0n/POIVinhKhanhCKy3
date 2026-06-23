@@ -3,22 +3,27 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 
 export const AdminLogin: React.FC = () => {
-  const { isAuthenticated, isLoading, error, login } = useAuthStore();
+  const { isAuthenticated, isLoading, error, login, adminInfo } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  // Determine where to send them after successful login
-  const from = location.state?.from?.pathname || '/admin/dashboard';
-
   useEffect(() => {
-    // If they are already authenticated, send them to their destination
-    if (isAuthenticated) {
+    // If they are already authenticated, send them to their destination based on role
+    if (isAuthenticated && adminInfo) {
+      let from = location.state?.from?.pathname;
+      if (!from || from === '/' || from === '/admin/login') {
+        if (adminInfo.role_ids.includes('poi_owner') && !adminInfo.role_ids.includes('admin') && !adminInfo.role_ids.includes('super_admin')) {
+          from = '/owner/dashboard';
+        } else {
+          from = '/admin/dashboard';
+        }
+      }
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate, from]);
+  }, [isAuthenticated, adminInfo, navigate, location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

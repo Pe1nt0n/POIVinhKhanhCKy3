@@ -16,11 +16,6 @@ export const PoiSubmissionForm: React.FC = () => {
   const [lng, setLng] = useState<number>(106.7029);
   const [rawDescription, setRawDescription] = useState('');
   
-  // AI Enhancer State
-  const [isEnhancing, setIsEnhancing] = useState(false);
-  const [enhancedDesc, setEnhancedDesc] = useState('');
-  const [aiError, setAiError] = useState<string | null>(null);
-
   // Submit State
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
@@ -60,35 +55,6 @@ export const PoiSubmissionForm: React.FC = () => {
     };
   }, []);
 
-  const handleEnhance = async () => {
-    if (!name || !category || !rawDescription) {
-      setAiError('Vui lòng điền Tên quán, Thể loại và Mô tả nháp trước khi gọi AI.');
-      return;
-    }
-    setIsEnhancing(true);
-    setAiError(null);
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/ai/enhance-description`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ name, category, rawDescription })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Lỗi từ Gemini');
-      setEnhancedDesc(data.data.enhanced_description);
-    } catch (e: any) {
-      setAiError(e.message);
-    } finally {
-      setIsEnhancing(false);
-    }
-  };
-
-  const handleApplyAi = () => {
-    setRawDescription(enhancedDesc);
-    setEnhancedDesc(''); // Hide diff view
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -117,7 +83,7 @@ export const PoiSubmissionForm: React.FC = () => {
 
       setSubmitMessage({ type: 'success', text: 'Nộp thông tin thành công! Vui lòng chờ Admin xét duyệt.' });
       // Reset form
-      setName(''); setCategory(''); setRawDescription(''); setEnhancedDesc('');
+      setName(''); setCategory(''); setRawDescription('');
     } catch (err: any) {
       setSubmitMessage({ type: 'error', text: err.message });
     } finally {
@@ -156,43 +122,18 @@ export const PoiSubmissionForm: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: AI Enhancer & Submit */}
+        {/* Right Column: Submit */}
         <div className="space-y-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
           <div className="flex-1 flex flex-col">
             <div className="flex justify-between items-end mb-1">
               <label className="block text-sm font-bold text-gray-700">Mô tả Nội dung</label>
-              <button 
-                type="button" 
-                onClick={handleEnhance}
-                disabled={isEnhancing}
-                className="text-xs bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-1.5 px-3 rounded-lg flex items-center gap-1 shadow-sm transition-transform active:scale-95 disabled:opacity-50"
-              >
-                {isEnhancing ? 'Đang viết...' : '✨ Cải thiện bằng AI'}
-              </button>
             </div>
-            {aiError && <p className="text-xs text-red-500 mb-2">{aiError}</p>}
             
             <textarea 
-              value={rawDescription} onChange={e => setRawDescription(e.target.value)} required rows={enhancedDesc ? 3 : 8}
+              value={rawDescription} onChange={e => setRawDescription(e.target.value)} required rows={8}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-[#e65100] focus:border-[#e65100] resize-none"
               placeholder="Gõ nháp những gì bạn muốn giới thiệu về quán..."
             />
-
-            {/* AI Diff View */}
-            {enhancedDesc && (
-              <div className="mt-4 flex-1 flex flex-col animate-fade-in">
-                <label className="block text-sm font-bold text-green-700 mb-1">Gợi ý từ AI (Gemini)</label>
-                <div className="flex-1 overflow-y-auto bg-green-50 border border-green-200 p-4 rounded-xl text-sm text-green-900 leading-relaxed shadow-inner">
-                  {enhancedDesc}
-                </div>
-                <button 
-                  type="button" onClick={handleApplyAi}
-                  className="mt-2 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-xl transition-colors shadow-md"
-                >
-                  ✓ Áp dụng nội dung này
-                </button>
-              </div>
-            )}
           </div>
 
           <div className="pt-4 border-t border-gray-100 mt-auto">

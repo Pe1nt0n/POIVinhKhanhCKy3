@@ -87,11 +87,31 @@ export const Map: React.FC = () => {
       if (!currentMarkers[poi.id]) {
         // Create custom marker element using Tailwind
         const el = document.createElement('div');
-        el.className = 'w-6 h-6 bg-[#e65100] border-2 border-white rounded-full shadow-lg cursor-pointer transform hover:scale-110 transition-transform';
+        el.className = 'cursor-pointer';
+        
+        const inner = document.createElement('div');
+        inner.className = 'w-6 h-6 bg-[#e65100] border-2 border-white rounded-full shadow-lg transform hover:scale-110 transition-transform';
+        el.appendChild(inner);
         
         // Popup
+        const listenUrl = poi.audio_url ? `${window.location.origin}/listen/${poi.id}` : '';
+        const qrImgHtml = listenUrl 
+            ? `<div class="mt-3 text-center">
+                 <div class="hidden sm:block">
+                   <a href="${listenUrl}" target="_blank">
+                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(listenUrl)}&color=e65100" alt="QR Code" class="mx-auto rounded border border-gray-100" />
+                   </a>
+                   <span class="text-[10px] text-gray-500 mt-1 block font-semibold mb-3">Quét bằng điện thoại để nghe</span>
+                 </div>
+                 <a href="${listenUrl}" target="_blank" class="block w-full py-2 bg-[#e65100] text-white text-xs font-bold rounded shadow hover:bg-[#ac1900] transition-colors flex items-center justify-center gap-1">
+                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                   Nghe Thuyết Minh
+                 </a>
+               </div>`
+            : '';
+
         const popup = new maplibregl.Popup({ offset: 15, closeButton: false })
-          .setHTML(`<div class="p-2 font-sans"><strong class="text-[#e65100] block">${poi.name || 'POI'}</strong><span class="text-xs text-gray-500">${poi.category || 'Unknown'}</span></div>`);
+          .setHTML(`<div class="p-3 font-sans w-56"><strong class="text-[#e65100] block text-base leading-tight mb-1">${poi.name || 'POI'}</strong><span class="text-[11px] font-medium bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded uppercase tracking-wider inline-block mb-2">${poi.category || 'Unknown'}</span><p class="text-xs text-gray-700 line-clamp-4 leading-relaxed mb-2">${poi.description || ''}</p>${qrImgHtml}</div>`);
 
         const marker = new maplibregl.Marker({ element: el })
           .setLngLat(poi.location.coordinates)

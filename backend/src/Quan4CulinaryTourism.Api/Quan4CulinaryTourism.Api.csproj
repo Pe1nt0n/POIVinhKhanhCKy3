@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -13,6 +13,12 @@
     <PackageReference Include="MongoDB.Driver" Version="3.9.0" />
     <PackageReference Include="StackExchange.Redis" Version="3.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="dummy.mp3">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

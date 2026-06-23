@@ -7,7 +7,7 @@ interface Poi {
   name: string;
   category: string;
   description: string;
-  isActive: boolean;
+  is_active: boolean;
 }
 
 export const AdminPois: React.FC = () => {
@@ -34,6 +34,25 @@ export const AdminPois: React.FC = () => {
     fetchPois();
   }, []);
 
+  const handleDeletePoi = async (id: string) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa POI này vĩnh viễn không?")) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/admin/poi/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        setPois(prev => prev.filter(p => p.id !== id));
+      } else {
+        const data = await res.json();
+        alert(`Lỗi khi xóa: ${data.message}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Đã xảy ra lỗi hệ thống.");
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-end">
@@ -57,7 +76,7 @@ export const AdminPois: React.FC = () => {
             <div key={poi.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-3">
                 <h3 className="text-lg font-bold text-gray-900 truncate pr-4">{poi.name}</h3>
-                {poi.isActive 
+                {poi.is_active 
                   ? <span className="px-2 py-1 text-[10px] font-bold rounded bg-green-100 text-green-800 uppercase tracking-wider">Live</span>
                   : <span className="px-2 py-1 text-[10px] font-bold rounded bg-yellow-100 text-yellow-800 uppercase tracking-wider">Nháp</span>
                 }
@@ -69,10 +88,16 @@ export const AdminPois: React.FC = () => {
                 {poi.description || 'Chưa có mô tả'}
               </p>
               <div className="pt-4 border-t border-gray-100 flex gap-2">
-                <button className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                <button 
+                  onClick={() => alert("Tính năng chỉnh sửa đang được phát triển. Vui lòng duyệt qua tab Xét duyệt.")}
+                  className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
                   ✏️ Sửa
                 </button>
-                <button className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                <button 
+                  onClick={() => handleDeletePoi(poi.id)}
+                  className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
                   🗑 Xóa
                 </button>
               </div>

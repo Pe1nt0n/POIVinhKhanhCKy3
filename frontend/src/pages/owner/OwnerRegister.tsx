@@ -28,7 +28,14 @@ export const OwnerRegister: React.FC = () => {
       const res = await fetch(`${API_BASE_URL}/api/v1/admin/auth/register-owner`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password,
+          email: formData.email,
+          business_name: formData.businessName,
+          business_address: formData.businessAddress,
+          cccd: formData.cccd
+        })
       });
 
       const data = await res.json();

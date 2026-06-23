@@ -83,8 +83,8 @@ public class AuthController : ControllerBase
             await _authService.LogoutAsync(userId, refreshToken);
         }
 
-        Response.Cookies.Delete(_jwtSettings.AccessTokenCookieName);
-        Response.Cookies.Delete(_jwtSettings.RefreshTokenCookieName);
+        Response.Cookies.Delete(_jwtSettings.AccessTokenCookieName, new CookieOptions { Path = "/" });
+        Response.Cookies.Delete(_jwtSettings.RefreshTokenCookieName, new CookieOptions { Path = "/" });
 
         return Ok(ApiResponse.Ok("Logged out successfully."));
     }
@@ -119,6 +119,7 @@ public class AuthController : ControllerBase
             HttpOnly = true,
             Secure = true, // Must be true in production (HTTPS)
             SameSite = SameSiteMode.Lax,
+            Path = "/",
             Expires = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes)
         };
         Response.Cookies.Append(_jwtSettings.AccessTokenCookieName, accessToken, cookieOptions);
@@ -128,6 +129,7 @@ public class AuthController : ControllerBase
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.Lax,
+            Path = "/",
             Expires = DateTime.UtcNow.AddDays(7) // PRD RefreshTokenExpireDays
         };
         Response.Cookies.Append(_jwtSettings.RefreshTokenCookieName, refreshToken, refreshCookieOptions);

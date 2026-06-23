@@ -50,4 +50,31 @@ public class LocalMediaStorageService
 
         return $"/media/pois/{fileName}";
     }
+
+    public async Task<string> SaveAudioAsync(IFormFile file)
+    {
+        if (file.Length == 0) throw new ArgumentException("File is empty.");
+
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (ext != ".mp3")
+        {
+            throw new ArgumentException("Invalid audio file type. Only .mp3 is allowed.");
+        }
+
+        var audioStoragePath = Path.Combine(Directory.GetParent(_storagePath)!.FullName, "audio");
+        if (!Directory.Exists(audioStoragePath))
+        {
+            Directory.CreateDirectory(audioStoragePath);
+        }
+
+        var fileName = $"{Guid.NewGuid()}{ext}";
+        var filePath = Path.Combine(audioStoragePath, fileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        return $"/media/audio/{fileName}";
+    }
 }

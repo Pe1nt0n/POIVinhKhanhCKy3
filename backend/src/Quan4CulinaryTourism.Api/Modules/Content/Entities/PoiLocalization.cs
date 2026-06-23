@@ -5,9 +5,10 @@ namespace Quan4CulinaryTourism.Api.Modules.Content.Entities;
 
 public class PoiLocalization
 {
-    [BsonId]
+    [BsonId(IdGenerator = typeof(MongoDB.Bson.Serialization.IdGenerators.StringObjectIdGenerator))]
     [BsonRepresentation(BsonType.ObjectId)]
-    public string Id { get; set; } = null!;
+    [BsonIgnoreIfDefault]
+    public string? Id { get; set; }
 
     [BsonElement("poi_id")]
     [BsonRepresentation(BsonType.ObjectId)]

@@ -58,6 +58,14 @@ public class AudioController : ControllerBase
         return Ok(ApiResponse<object>.Ok(tasks));
     }
 
+    [HttpDelete("tasks/{id}")]
+    [RequirePermission(Permissions.System.Logs)]
+    public async Task<IActionResult> DeleteTask(string id)
+    {
+        await _audioService.DeleteTaskAsync(id);
+        return Ok(ApiResponse.Ok("Task deleted successfully"));
+    }
+
     /// <summary>
     /// Returns a list of supported voices. Served from Redis Cache.
     /// </summary>

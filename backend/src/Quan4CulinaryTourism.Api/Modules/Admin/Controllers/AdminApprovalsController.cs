@@ -15,15 +15,21 @@ public class AdminApprovalsController : ControllerBase
     private readonly OwnerRegistrationService _registrationService;
     private readonly PoiService _poiService;
     private readonly UserService _userService;
+    private readonly Quan4CulinaryTourism.Api.Modules.Audio.Services.AudioService _audioService;
+    private readonly TranslationTaskQueue _translationQueue;
 
     public AdminApprovalsController(
         OwnerRegistrationService registrationService, 
         PoiService poiService,
-        UserService userService)
+        UserService userService,
+        Quan4CulinaryTourism.Api.Modules.Audio.Services.AudioService audioService,
+        TranslationTaskQueue translationQueue)
     {
         _registrationService = registrationService;
         _poiService = poiService;
         _userService = userService;
+        _audioService = audioService;
+        _translationQueue = translationQueue;
     }
 
     public record ApprovalActionRequest(string? Note);
@@ -112,7 +118,10 @@ public class AdminApprovalsController : ControllerBase
         poi.IsActive = true;
         await _poiService.UpdateAsync(id, poi);
 
-        return Ok(ApiResponse.Ok("POI approved and published."));
+        // Queue translation task
+        await _translationQueue.EnqueueAsync(id);
+
+        return Ok(ApiResponse.Ok("POI approved and published. Background translation started."));
     }
 
     [HttpPost("pois/{id}/reject")]
@@ -125,5 +134,57 @@ public class AdminApprovalsController : ControllerBase
         await _poiService.DeleteAsync(id);
 
         return Ok(ApiResponse.Ok("POI submission rejected and deleted."));
+    }
+
+    // ==========================================
+    // 3. Audio Updates (TTS)
+    // ==========================================
+
+    [HttpGet("audio-updates")]
+    [RequirePermission(Permissions.Poi.Read)]
+    public async Task<IActionResult> GetPendingAudioUpdates()
+    {
+        var pois = await _poiService.GetPendingAudioUpdatesAsync();
+        return Ok(ApiResponse<object>.Ok(pois));
+    }
+
+    [HttpPost("audio-updates/{id}/approve")]
+    [RequirePermission(Permissions.Poi.Update)]
+    public async Task<IActionResult> ApproveAudioUpdate(string id)
+    {
+        var poi = await _poiService.GetByIdAsync(id);
+        if (poi == null) return NotFound(ApiResponse.Fail("POI not found"));
+        if (!poi.AudioUpdateRequested) return BadRequest(ApiResponse.Fail("No pending audio update for this POI"));
+
+        // Copy draft to actual description
+        poi.Description = poi.DraftDescription ?? poi.Description;
+        poi.DraftDescription = null;
+        poi.AudioUpdateRequested = false;
+
+        await _poiService.UpdateAsync(id, poi);
+
+        // Queue TTS task for Vietnamese
+        await _audioService.EnqueueTaskAsync(id, "vi");
+
+        // Queue translation task (and TTS for other languages can be added later)
+        await _translationQueue.EnqueueAsync(id);
+
+        return Ok(ApiResponse.Ok("Audio update approved. Description updated, translation queued, and TTS task queued."));
+    }
+
+    [HttpPost("audio-updates/{id}/reject")]
+    [RequirePermission(Permissions.Poi.Update)]
+    public async Task<IActionResult> RejectAudioUpdate(string id)
+    {
+        var poi = await _poiService.GetByIdAsync(id);
+        if (poi == null) return NotFound(ApiResponse.Fail("POI not found"));
+        if (!poi.AudioUpdateRequested) return BadRequest(ApiResponse.Fail("No pending audio update for this POI"));
+
+        poi.DraftDescription = null;
+        poi.AudioUpdateRequested = false;
+
+        await _poiService.UpdateAsync(id, poi);
+
+        return Ok(ApiResponse.Ok("Audio update rejected."));
     }
 }
