@@ -57,12 +57,6 @@ cd POIVinhKhanhCKy3
 cp .env.example .env
 ```
 
-Nội dung file `.env`:
-
-```env
-GEMINI_API_KEY=
-```
-
 ### Bước 3: Chạy bằng Docker
 
 ```bash
