@@ -80,4 +80,22 @@ public class OwnerPoiController : ControllerBase
             average_rating = avgRating
         }));
     }
+
+    [HttpGet("force-tts")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForceTts([FromServices] Quan4CulinaryTourism.Api.Modules.Content.Services.TranslationTaskQueue ttsQueue)
+    {
+        var pois = await _poiService.GetActivePoisAsync();
+        foreach (var poi in pois)
+        {
+            var audioService = HttpContext.RequestServices.GetRequiredService<Quan4CulinaryTourism.Api.Modules.Audio.Services.AudioService>();
+            await audioService.EnqueueTaskAsync(poi.Id, "vi");
+            await audioService.EnqueueTaskAsync(poi.Id, "en");
+            await audioService.EnqueueTaskAsync(poi.Id, "zh");
+            await audioService.EnqueueTaskAsync(poi.Id, "ja");
+            await audioService.EnqueueTaskAsync(poi.Id, "ko");
+            await audioService.EnqueueTaskAsync(poi.Id, "fr");
+        }
+        return Ok("Triggered TTS for all languages.");
+    }
 }

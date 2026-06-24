@@ -19,7 +19,14 @@ public class MockTtsProvider : ITtsProvider
         if (string.IsNullOrWhiteSpace(text))
             throw new ArgumentException("Text cannot be empty");
 
-        var path = Path.Combine(Directory.GetCurrentDirectory(), "dummy.mp3");
+        var fileName = $"dummy_{languageCode}.mp3";
+        var path = Path.Combine(Directory.GetCurrentDirectory(), fileName);
+        
+        if (!File.Exists(path)) 
+        {
+            path = Path.Combine(Directory.GetCurrentDirectory(), "dummy_vi.mp3");
+        }
+
         if (File.Exists(path))
         {
             return await File.ReadAllBytesAsync(path, cancellationToken);

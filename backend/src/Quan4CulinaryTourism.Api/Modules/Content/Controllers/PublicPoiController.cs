@@ -91,4 +91,31 @@ public class PublicPoiController : ControllerBase
 
         return Ok(ApiResponse<object>.Ok(dto));
     }
+
+    public class RatePoiRequest
+    {
+        public int Rating { get; set; }
+    }
+
+    /// <summary>
+    /// Rate a POI (1-5 stars)
+    /// </summary>
+    [HttpPost("{id}/rate")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RatePoi(string id, [FromBody] RatePoiRequest request)
+    {
+        if (request.Rating < 1 || request.Rating > 5)
+            return BadRequest(ApiResponse.Fail("Điểm đánh giá phải từ 1 đến 5."));
+
+        var poi = await _poiService.GetByIdAsync(id);
+        if (poi == null)
+            return NotFound(ApiResponse.Fail("Không tìm thấy địa điểm."));
+
+        poi.Rating = ((poi.Rating * poi.RatingCount) + request.Rating) / (poi.RatingCount + 1);
+        poi.RatingCount += 1;
+        
+        await _poiService.UpdateAsync(id, poi);
+
+        return Ok(ApiResponse.Ok("Cảm ơn bạn đã đánh giá!"));
+    }
 }
