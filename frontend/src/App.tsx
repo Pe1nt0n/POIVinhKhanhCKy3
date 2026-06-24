@@ -6,6 +6,7 @@ import { AudioEngine } from './components/AudioEngine';
 import { CustomerChatbot } from './components/CustomerChatbot';
 import { QRScanner } from './pages/QRScanner';
 import { PoiSubmissionForm } from './pages/PoiSubmissionForm';
+import { t } from './utils/translations';
 
 function App() {
   const { 
@@ -78,9 +79,9 @@ function App() {
             <span className="text-white font-bold text-lg">VK</span>
           </div>
           <div>
-            <h1 className="text-sm font-extrabold text-gray-900 leading-tight">Khu Ẩm Thực Vĩnh Khánh</h1>
+            <h1 className="text-sm font-extrabold text-gray-900 leading-tight">{t(language, 'foodCourt')}</h1>
             <p className="text-xs font-semibold text-[#e65100]">
-              {pois.length} POIs Loaded
+              {pois.length} {t(language, 'poisLoaded')}
             </p>
           </div>
         </div>
@@ -129,7 +130,7 @@ function App() {
         {audioEnabled && (
           <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-lg w-full flex flex-col gap-2 border border-gray-100">
             <div className="flex justify-between text-xs font-bold text-gray-700 px-1">
-              <span>Mock GPS (Geofencing Test)</span>
+              <span>{t(language, 'mockGps')}</span>
             </div>
             <div className="flex gap-2">
               <input 
@@ -153,7 +154,7 @@ function App() {
               onClick={handleTeleport}
               className="w-full bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
             >
-              Teleport 
+              {t(language, 'teleport')} 
             </button>
           </div>
         )}
@@ -166,7 +167,7 @@ function App() {
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
           </svg>
-          Quét QR Ngay
+          {t(language, 'scanQr')}
         </button>
       </div>
 

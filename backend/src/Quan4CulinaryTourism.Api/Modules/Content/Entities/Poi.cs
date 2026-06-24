@@ -41,6 +41,9 @@ public class Poi
     [BsonElement("rating")]
     public double Rating { get; set; } = 0.0;
 
+    [BsonElement("rating_count")]
+    public int RatingCount { get; set; } = 0;
+
     [BsonElement("priority")]
     public int Priority { get; set; } = 0;
 

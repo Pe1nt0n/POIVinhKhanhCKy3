@@ -63,7 +63,7 @@ services:
       - Redis__ConnectionString=redis:6379
       - AiSettings__ApiKey=${GEMINI_API_KEY:-}
     volumes:
-      - backend_media:/app/media
+      - backend_media:/app/wwwroot/media
     networks:
       - quan4_net
 

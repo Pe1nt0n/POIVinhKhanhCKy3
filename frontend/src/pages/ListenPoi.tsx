@@ -1,14 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { usePoiStore } from '../store/usePoiStore';
+import { t } from '../utils/translations';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 export const ListenPoi: React.FC = () => {
   const { poiId } = useParams<{ poiId: string }>();
-  const { pois, isSyncing, initOfflineData, syncWithServer } = usePoiStore();
+  const { pois, isSyncing, initOfflineData, syncWithServer, language } = usePoiStore();
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  
+  // Analytics & Rating state
+  const hasTrackedPlayRef = useRef(false);
+  const [rating, setRating] = useState(0);
+  const [hasRated, setHasRated] = useState(false);
 
   // Initialize data if someone visits this URL directly
   useEffect(() => {
@@ -24,7 +30,26 @@ export const ListenPoi: React.FC = () => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const handlePlay = () => setIsPlaying(true);
+    const handlePlay = () => {
+      setIsPlaying(true);
+      if (poiId) {
+        const deviceId = localStorage.getItem('device_id') || crypto.randomUUID();
+        localStorage.setItem('device_id', deviceId);
+        
+        fetch(`${API_BASE_URL}/api/v1/analytics/collect`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            events: [{
+              eventType: 'audio_play',
+              poiId: poiId,
+              deviceId: deviceId,
+              sessionId: deviceId
+            }]
+          })
+        }).catch(err => console.error('Failed to track audio play', err));
+      }
+    };
     const handlePause = () => setIsPlaying(false);
     const handleEnded = () => setIsPlaying(false);
 
@@ -48,12 +73,28 @@ export const ListenPoi: React.FC = () => {
     }
   };
 
+  const handleRate = async (star: number) => {
+    if (hasRated || !poiId) return;
+    setRating(star);
+    setHasRated(true);
+    
+    try {
+      await fetch(`${API_BASE_URL}/api/v1/poi/${poiId}/rate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating: star })
+      });
+    } catch (e) {
+      console.error('Failed to rate POI', e);
+    }
+  };
+
   if (!poi) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-gray-50 p-4">
         <div className="text-center">
           <div className="animate-spin h-10 w-10 border-4 border-[#e65100] border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Đang tải thông tin địa điểm...</p>
+          <p className="text-gray-600 font-medium">{t(language, 'loading')}</p>
         </div>
       </div>
     );
@@ -72,7 +113,7 @@ export const ListenPoi: React.FC = () => {
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          <span className="font-semibold text-sm">Quay lại Bản đồ</span>
+          <span className="font-semibold text-sm">{t(language, 'backToMap')}</span>
         </Link>
         <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center shadow-inner">
           <span className="text-[#e65100] font-bold text-sm">VK</span>
@@ -100,7 +141,7 @@ export const ListenPoi: React.FC = () => {
         {/* POI Info */}
         <div className="text-center mb-10 w-full">
           <span className="inline-block px-3 py-1 bg-orange-100 text-[#e65100] text-xs font-bold uppercase tracking-widest rounded-full mb-3">
-            {poi.category || 'Điểm khám phá'}
+            {poi.category || t(language, 'discoveryPoint')}
           </span>
           <h1 className="text-2xl font-extrabold text-gray-900 mb-2 leading-tight">
             {poi.name}
@@ -132,7 +173,7 @@ export const ListenPoi: React.FC = () => {
             
             <div className="w-full flex items-center justify-center gap-2">
                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                 {isPlaying ? 'Đang phát thuyết minh...' : 'Nhấn để nghe thuyết minh'}
+                 {isPlaying ? t(language, 'playingAudio') : t(language, 'tapToListen')}
                </span>
             </div>
             
@@ -143,9 +184,39 @@ export const ListenPoi: React.FC = () => {
           </div>
         ) : (
           <div className="bg-red-50 text-red-600 px-6 py-4 rounded-xl text-sm font-medium border border-red-100">
-            Điểm này hiện chưa có âm thanh thuyết minh.
+            {t(language, 'noAudio')}
           </div>
         )}
+
+        {/* Rating Section */}
+        <div className="w-full mt-6 bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 flex flex-col items-center">
+          <h3 className="text-sm font-bold text-gray-700 uppercase tracking-widest mb-3">
+            {t(language, 'rateThisPlace')}
+          </h3>
+          <div className="flex gap-2">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                onClick={() => handleRate(star)}
+                disabled={hasRated}
+                className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${
+                  hasRated 
+                    ? star <= rating ? 'text-yellow-400 bg-yellow-50' : 'text-gray-300 bg-gray-50' 
+                    : 'text-gray-300 bg-gray-50 hover:bg-yellow-50 hover:text-yellow-400 hover:scale-110 active:scale-95'
+                }`}
+              >
+                <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                </svg>
+              </button>
+            ))}
+          </div>
+          {hasRated && (
+            <p className="text-green-600 text-sm font-medium mt-3 animate-fade-in">
+              {t(language, 'thanksForRating', rating.toString())}
+            </p>
+          )}
+        </div>
       </main>
 
       <style>{`

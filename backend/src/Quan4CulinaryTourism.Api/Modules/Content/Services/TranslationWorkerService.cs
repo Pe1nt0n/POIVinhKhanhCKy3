@@ -70,6 +70,10 @@ public class TranslationWorkerService : BackgroundService
                         await localizationService.UpsertLocalizationAsync(loc);
                         _logger.LogInformation("Successfully translated and saved POI {PoiId} to {Lang}.", poiId, lang);
                         
+                        // Queue TTS task for the new language
+                        var audioService = scope.ServiceProvider.GetRequiredService<Quan4CulinaryTourism.Api.Modules.Audio.Services.AudioService>();
+                        await audioService.EnqueueTaskAsync(poiId, lang);
+
                         await Task.Delay(1000, stoppingToken); // Rate limiting buffer
                     }
                 }
