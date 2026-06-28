@@ -3,6 +3,9 @@ import maplibregl, { Map as MapLibreMap, Marker } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { usePoiStore } from '../store/usePoiStore';
+import * as signalR from '@microsoft/signalr';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 // We use a publicly hosted PMTiles vector map of the world/region for MVP testing
 // Replace this with `/quan4.pmtiles` in production when the file is available in `public/`
@@ -60,7 +63,35 @@ export const Map: React.FC = () => {
 
     mapRef.current = map;
 
+    // Track Page View
+    const deviceId = localStorage.getItem('device_id') || crypto.randomUUID();
+    localStorage.setItem('device_id', deviceId);
+    fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/v1/analytics/collect`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        events: [{
+          event_type: 'page_view',
+          device_id: deviceId,
+          session_id: deviceId,
+          metadata: { page: 'Map' }
+        }]
+      })
+    }).catch(() => {});
+
+    // Establish SignalR connection for presence tracking
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl(`${API_BASE_URL}/hubs/public-analytics?device_id=${deviceId}`, {
+         // User connections don't strictly need credentials if we allow anonymous, 
+         // but it's fine to leave default
+      })
+      .withAutomaticReconnect()
+      .build();
+
+    connection.start().catch(err => console.error('Failed to start presence tracking', err));
+
     return () => {
+      connection.stop().catch(() => {});
       map.remove();
       maplibregl.removeProtocol('pmtiles');
       mapRef.current = null;
@@ -82,18 +113,8 @@ export const Map: React.FC = () => {
       }
     });
 
-    // Add/Update markers
-    pois.forEach(poi => {
-      if (!currentMarkers[poi.id]) {
-        // Create custom marker element using Tailwind
-        const el = document.createElement('div');
-        el.className = 'cursor-pointer';
-        
-        const inner = document.createElement('div');
-        inner.className = 'w-6 h-6 bg-[#e65100] border-2 border-white rounded-full shadow-lg transform hover:scale-110 transition-transform';
-        el.appendChild(inner);
-        
-        // Popup
+    // Helper to generate popup HTML
+    const generatePopupHtml = (poi: any) => {
         const listenUrl = poi.audio_url ? `${window.location.origin}/listen/${poi.id}` : '';
         const qrImgHtml = listenUrl 
             ? `<div class="mt-3 text-center">
@@ -114,8 +135,39 @@ export const Map: React.FC = () => {
             ? `<img src="${import.meta.env.VITE_API_BASE_URL || ''}${poi.images[0]}" alt="${poi.name}" class="w-full h-24 object-cover rounded-t-lg mb-2" />` 
             : '';
 
+        return `<div class="p-0 font-sans w-56">${coverImageHtml}<div class="p-3"><strong class="text-[#e65100] block text-base leading-tight mb-1">${poi.name || 'POI'}</strong><span class="text-[11px] font-medium bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded uppercase tracking-wider inline-block mb-2">${poi.category || 'Unknown'}</span><p class="text-xs text-gray-700 line-clamp-4 leading-relaxed mb-2">${poi.description || ''}</p>${qrImgHtml}</div></div>`;
+    };
+
+    // Add/Update markers
+    pois.forEach(poi => {
+      if (!currentMarkers[poi.id]) {
+        // Create custom marker element using Tailwind
+        const el = document.createElement('div');
+        el.className = 'cursor-pointer';
+        
+        const inner = document.createElement('div');
+        inner.className = 'w-6 h-6 bg-[#e65100] border-2 border-white rounded-full shadow-lg transform hover:scale-110 transition-transform';
+        el.appendChild(inner);
+        
         const popup = new maplibregl.Popup({ offset: 15, closeButton: false })
-          .setHTML(`<div class="p-0 font-sans w-56">${coverImageHtml}<div class="p-3"><strong class="text-[#e65100] block text-base leading-tight mb-1">${poi.name || 'POI'}</strong><span class="text-[11px] font-medium bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded uppercase tracking-wider inline-block mb-2">${poi.category || 'Unknown'}</span><p class="text-xs text-gray-700 line-clamp-4 leading-relaxed mb-2">${poi.description || ''}</p>${qrImgHtml}</div></div>`);
+          .setHTML(generatePopupHtml(poi));
+
+        popup.on('open', () => {
+            const deviceId = localStorage.getItem('device_id') || crypto.randomUUID();
+            localStorage.setItem('device_id', deviceId);
+            fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/v1/analytics/collect`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    events: [{
+                        event_type: 'poi_view',
+                        poi_id: poi.id,
+                        device_id: deviceId,
+                        session_id: deviceId
+                    }]
+                })
+            }).catch(() => {});
+        });
 
         const marker = new maplibregl.Marker({ element: el })
           .setLngLat(poi.location.coordinates)
@@ -124,8 +176,13 @@ export const Map: React.FC = () => {
 
         currentMarkers[poi.id] = marker;
       } else {
-        // Just update position if it somehow changed
+        // Update position if it somehow changed
         currentMarkers[poi.id].setLngLat(poi.location.coordinates);
+        // Update popup content when language changes
+        const popup = currentMarkers[poi.id].getPopup();
+        if (popup) {
+          popup.setHTML(generatePopupHtml(poi));
+        }
       }
     });
 

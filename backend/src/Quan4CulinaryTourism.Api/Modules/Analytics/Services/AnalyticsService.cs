@@ -2,16 +2,20 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Quan4CulinaryTourism.Api.Common.Infrastructure;
 using Quan4CulinaryTourism.Api.Modules.Analytics.Entities;
+using Microsoft.AspNetCore.SignalR;
+using Quan4CulinaryTourism.Api.Modules.Analytics.Hubs;
 
 namespace Quan4CulinaryTourism.Api.Modules.Analytics.Services;
 
 public class AnalyticsService
 {
     private readonly IMongoCollection<AnalyticsEvent> _events;
+    private readonly IHubContext<AnalyticsHub> _hubContext;
 
-    public AnalyticsService(MongoDbContext context)
+    public AnalyticsService(MongoDbContext context, IHubContext<AnalyticsHub> hubContext)
     {
         _events = context.GetCollection<AnalyticsEvent>("analytics_events");
+        _hubContext = hubContext;
     }
 
     public async Task IngestBatchAsync(IEnumerable<AnalyticsEvent> eventsBatch)
@@ -19,6 +23,7 @@ public class AnalyticsService
         if (eventsBatch.Any())
         {
             await _events.InsertManyAsync(eventsBatch);
+            await _hubContext.Clients.All.SendAsync("ReceiveAnalyticsUpdate");
         }
     }
 
@@ -37,12 +42,8 @@ public class AnalyticsService
         var audioPlaysTodayFilter = builder.And(todayFilter, builder.Eq(x => x.EventType, "audio_play"));
         var audioPlaysToday = await _events.CountDocumentsAsync(audioPlaysTodayFilter);
 
-        // Active users in the last 5 minutes
-        var activeThreshold = DateTime.UtcNow.AddMinutes(-5);
-        var activeFilter = builder.Gte(x => x.CreatedAt, activeThreshold);
-        var activeSessionsCursor = await _events.DistinctAsync(x => x.SessionId, activeFilter);
-        var activeSessions = await activeSessionsCursor.ToListAsync();
-        var activeUsers = activeSessions.Count;
+        // Active users from SignalR connections
+        var activeUsers = AnalyticsHub.ActiveConnections;
 
         return new
         {

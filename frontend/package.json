@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@microsoft/signalr": "^10.0.0",
     "@turf/turf": "^7.3.5",
     "html5-qrcode": "^2.3.8",
     "idb": "^8.0.0",

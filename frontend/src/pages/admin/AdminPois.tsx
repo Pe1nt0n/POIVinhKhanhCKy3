@@ -497,8 +497,12 @@ export const AdminPois: React.FC = () => {
                       <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
                       <div className="flex-1 flex justify-between items-center">
                         <div>
-                          <p className="text-sm text-green-700 font-bold">Đã có Audio</p>
-                          <a href={`${API_BASE_URL}${locs.find(l => l.lang === currentLang)?.audio_url}`} target="_blank" rel="noreferrer" className="text-xs text-green-600 underline hover:text-green-800">Nghe thử</a>
+                          <p className="text-sm text-green-700 font-bold mb-1">Đã có Audio</p>
+                          <audio 
+                            src={`${API_BASE_URL}${locs.find(l => l.lang === currentLang)?.audio_url}`} 
+                            controls 
+                            className="h-8 w-48"
+                          />
                         </div>
                         <button 
                           onClick={handleDeleteAudio}
