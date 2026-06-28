@@ -110,8 +110,12 @@ export const Map: React.FC = () => {
                </div>`
             : '';
 
+        const coverImageHtml = (poi.images && poi.images.length > 0) 
+            ? `<img src="${import.meta.env.VITE_API_BASE_URL || ''}${poi.images[0]}" alt="${poi.name}" class="w-full h-24 object-cover rounded-t-lg mb-2" />` 
+            : '';
+
         const popup = new maplibregl.Popup({ offset: 15, closeButton: false })
-          .setHTML(`<div class="p-3 font-sans w-56"><strong class="text-[#e65100] block text-base leading-tight mb-1">${poi.name || 'POI'}</strong><span class="text-[11px] font-medium bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded uppercase tracking-wider inline-block mb-2">${poi.category || 'Unknown'}</span><p class="text-xs text-gray-700 line-clamp-4 leading-relaxed mb-2">${poi.description || ''}</p>${qrImgHtml}</div>`);
+          .setHTML(`<div class="p-0 font-sans w-56">${coverImageHtml}<div class="p-3"><strong class="text-[#e65100] block text-base leading-tight mb-1">${poi.name || 'POI'}</strong><span class="text-[11px] font-medium bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded uppercase tracking-wider inline-block mb-2">${poi.category || 'Unknown'}</span><p class="text-xs text-gray-700 line-clamp-4 leading-relaxed mb-2">${poi.description || ''}</p>${qrImgHtml}</div></div>`);
 
         const marker = new maplibregl.Marker({ element: el })
           .setLngLat(poi.location.coordinates)

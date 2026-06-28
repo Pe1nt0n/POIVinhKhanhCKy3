@@ -14,10 +14,12 @@ namespace Quan4CulinaryTourism.Api.Modules.Content.Controllers;
 public class OwnerPoiController : ControllerBase
 {
     private readonly PoiService _poiService;
+    private readonly LocalMediaStorageService _mediaStorage;
 
-    public OwnerPoiController(PoiService poiService)
+    public OwnerPoiController(PoiService poiService, LocalMediaStorageService mediaStorage)
     {
         _poiService = poiService;
+        _mediaStorage = mediaStorage;
     }
 
     public class AudioUpdateRequest
@@ -97,5 +99,62 @@ public class OwnerPoiController : ControllerBase
             await audioService.EnqueueTaskAsync(poi.Id, "fr");
         }
         return Ok("Triggered TTS for all languages.");
+    }
+
+    [HttpPost("{id}/images")]
+    [RequirePermission(Permissions.Owner.ManageOwnPoi)]
+    public async Task<IActionResult> UploadImage(string id, IFormFile file)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        var existing = await _poiService.GetByIdAsync(id);
+        if (existing == null) return NotFound(ApiResponse.Fail("POI not found."));
+
+        if (existing.OwnerId != userId)
+        {
+            return Forbid();
+        }
+
+        if (existing.Images.Count >= SystemConstants.MaxPoiImages)
+        {
+            return BadRequest(ApiResponse.Fail($"Maximum {SystemConstants.MaxPoiImages} images allowed per POI."));
+        }
+
+        try
+        {
+            var url = await _mediaStorage.SavePoiImageAsync(file);
+            existing.Images.Add(url);
+            await _poiService.UpdateAsync(id, existing);
+            return Ok(ApiResponse<object>.Ok(new { url }, "Image uploaded successfully."));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ApiResponse.Fail(ex.Message));
+        }
+    }
+
+    [HttpDelete("{id}/images")]
+    [RequirePermission(Permissions.Owner.ManageOwnPoi)]
+    public async Task<IActionResult> DeleteImage(string id, [FromBody] string imageUrl)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        var existing = await _poiService.GetByIdAsync(id);
+        if (existing == null) return NotFound(ApiResponse.Fail("POI not found."));
+
+        if (existing.OwnerId != userId)
+        {
+            return Forbid();
+        }
+
+        if (existing.Images.Remove(imageUrl))
+        {
+            await _poiService.UpdateAsync(id, existing);
+            return Ok(ApiResponse.Ok("Image deleted successfully."));
+        }
+
+        return BadRequest(ApiResponse.Fail("Image not found in this POI."));
     }
 }

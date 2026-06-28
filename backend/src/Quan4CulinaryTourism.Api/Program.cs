@@ -47,6 +47,7 @@ builder.Services.AddScoped<OwnerRegistrationService>();
 builder.Services.AddSingleton<LocalMediaStorageService>();
 builder.Services.AddScoped<PoiService>();
 builder.Services.AddScoped<PoiLocalizationService>();
+builder.Services.AddScoped<ReviewService>();
 
 builder.Services.AddSingleton<AudioTaskQueue>();
 builder.Services.AddSingleton<TranslationTaskQueue>();

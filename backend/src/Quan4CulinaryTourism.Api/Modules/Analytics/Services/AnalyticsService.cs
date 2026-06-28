@@ -37,11 +37,19 @@ public class AnalyticsService
         var audioPlaysTodayFilter = builder.And(todayFilter, builder.Eq(x => x.EventType, "audio_play"));
         var audioPlaysToday = await _events.CountDocumentsAsync(audioPlaysTodayFilter);
 
+        // Active users in the last 5 minutes
+        var activeThreshold = DateTime.UtcNow.AddMinutes(-5);
+        var activeFilter = builder.Gte(x => x.CreatedAt, activeThreshold);
+        var activeSessionsCursor = await _events.DistinctAsync(x => x.SessionId, activeFilter);
+        var activeSessions = await activeSessionsCursor.ToListAsync();
+        var activeUsers = activeSessions.Count;
+
         return new
         {
             total_events_today = totalEventsToday,
             poi_views_today = poiViewsToday,
-            audio_plays_today = audioPlaysToday
+            audio_plays_today = audioPlaysToday,
+            active_users = activeUsers
         };
     }
 
@@ -57,4 +65,27 @@ public class AnalyticsService
 
         return await _events.CountDocumentsAsync(filter);
     }
+
+    public async Task<List<PoiAudioPlayStat>> GetTopAudioPoisAsync(int limit = 10)
+    {
+        var filter = Builders<AnalyticsEvent>.Filter.Eq(x => x.EventType, "audio_play");
+        
+        var results = await _events.Aggregate()
+            .Match(filter)
+            .Group(
+                x => x.PoiId,
+                g => new PoiAudioPlayStat { PoiId = g.Key, PlayCount = g.Count() }
+            )
+            .SortByDescending(x => x.PlayCount)
+            .Limit(limit)
+            .ToListAsync();
+
+        return results;
+    }
+}
+
+public class PoiAudioPlayStat
+{
+    public string? PoiId { get; set; }
+    public long PlayCount { get; set; }
 }

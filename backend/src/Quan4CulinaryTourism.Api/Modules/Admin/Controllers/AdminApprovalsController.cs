@@ -118,10 +118,7 @@ public class AdminApprovalsController : ControllerBase
         poi.IsActive = true;
         await _poiService.UpdateAsync(id, poi);
 
-        // Queue translation task
-        await _translationQueue.EnqueueAsync(id);
-
-        return Ok(ApiResponse.Ok("POI approved and published. Background translation started."));
+        return Ok(ApiResponse.Ok("POI approved and published."));
     }
 
     [HttpPost("pois/{id}/reject")]
@@ -163,13 +160,7 @@ public class AdminApprovalsController : ControllerBase
 
         await _poiService.UpdateAsync(id, poi);
 
-        // Queue TTS task for Vietnamese
-        await _audioService.EnqueueTaskAsync(id, "vi");
-
-        // Queue translation task (and TTS for other languages can be added later)
-        await _translationQueue.EnqueueAsync(id);
-
-        return Ok(ApiResponse.Ok("Audio update approved. Description updated, translation queued, and TTS task queued."));
+        return Ok(ApiResponse.Ok("Audio update approved. Description updated."));
     }
 
     [HttpPost("audio-updates/{id}/reject")]

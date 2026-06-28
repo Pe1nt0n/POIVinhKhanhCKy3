@@ -10,6 +10,7 @@ interface MyPoi {
   draft_description?: string;
   audio_update_requested: boolean;
   is_active: boolean;
+  images?: string[];
 }
 
 export const OwnerDashboard: React.FC = () => {
@@ -22,6 +23,11 @@ export const OwnerDashboard: React.FC = () => {
   const [editingPoi, setEditingPoi] = useState<MyPoi | null>(null);
   const [newDesc, setNewDesc] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Image Modal State
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [managingPoi, setManagingPoi] = useState<MyPoi | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Stats State
   const [stats, setStats] = useState({ audio_plays: 0, average_rating: 0 });
@@ -96,6 +102,73 @@ export const OwnerDashboard: React.FC = () => {
     }
   };
 
+  const handleOpenImageManager = (poi: MyPoi) => {
+    setManagingPoi(poi);
+    setIsImageModalOpen(true);
+  };
+
+  const handleUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!managingPoi || !e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    
+    const formData = new FormData();
+    formData.append('images', file);
+
+    setUploadingImage(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/owner/poi/${managingPoi.id}/images`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+      if (res.ok) {
+        fetchMyPois(); // Refresh data
+        // Wait briefly for backend, ideally backend returns updated POI. We refresh by re-fetching.
+        const json = await res.json();
+        // Cập nhật state nội bộ nếu API trả về data mới
+        if (json.data && json.data.images) {
+           setManagingPoi(prev => prev ? {...prev, images: json.data.images} : null);
+        } else {
+           // Fallback nếu api không trả về
+           setManagingPoi(prev => prev ? {...prev, images: [...(prev.images||[]), ""]} : null);
+           setTimeout(() => { setIsImageModalOpen(false); }, 1000);
+        }
+        alert("Đã tải ảnh lên thành công");
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Lỗi tải ảnh');
+      }
+    } catch(err) {
+      console.error(err);
+      alert('Đã xảy ra lỗi.');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = ''; // clear input
+    }
+  };
+
+  const handleDeleteImage = async (imageUrl: string) => {
+    if (!managingPoi) return;
+    if (!window.confirm("Bạn có chắc chắn muốn xóa ảnh này?")) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/owner/poi/${managingPoi.id}/images`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl }),
+        credentials: 'include'
+      });
+      if (res.ok) {
+        setManagingPoi(prev => prev ? {...prev, images: prev.images?.filter(img => img !== imageUrl)} : null);
+        fetchMyPois();
+      } else {
+        const data = await res.json();
+        alert(data.message);
+      }
+    } catch(err) {
+      console.error(err);
+    }
+  };
+
   const activeCount = pois.filter(p => p.is_active).length;
   const pendingCount = pois.filter(p => !p.is_active).length;
 
@@ -152,17 +225,23 @@ export const OwnerDashboard: React.FC = () => {
                 </div>
                 
                 {poi.audio_update_requested ? (
-                  <div className="bg-blue-50 text-blue-700 p-3 rounded-xl text-sm font-medium border border-blue-100">
+                  <div className="bg-blue-50 text-blue-700 p-3 rounded-xl text-sm font-medium border border-blue-100 mb-2">
                     ⏳ Yêu cầu đổi nội dung thuyết minh đang chờ Admin duyệt.
                   </div>
                 ) : (
                   <button 
                     onClick={() => handleOpenEdit(poi)}
-                    className="w-full bg-[#e65100] hover:bg-[#ac1900] text-white font-bold py-2.5 rounded-xl transition-colors"
+                    className="w-full mb-2 bg-[#e65100] hover:bg-[#ac1900] text-white font-bold py-2 rounded-xl transition-colors text-sm"
                   >
-                    ✏️ Tùy chỉnh nội dung thuyết minh (Audio)
+                    ✏️ Tùy chỉnh Thuyết minh (Audio)
                   </button>
                 )}
+                <button 
+                    onClick={() => handleOpenImageManager(poi)}
+                    className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-xl transition-colors text-sm border border-gray-200"
+                  >
+                    🖼 Quản lý Hình ảnh ({poi.images?.length || 0})
+                </button>
               </div>
             ))}
           </div>
@@ -196,6 +275,62 @@ export const OwnerDashboard: React.FC = () => {
                 className="flex-1 bg-[#e65100] hover:bg-[#ac1900] text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50"
               >
                 {isSubmitting ? 'Đang gửi...' : 'Gửi Yêu cầu'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Quản lý Ảnh */}
+      {isImageModalOpen && managingPoi && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-3xl w-full shadow-2xl max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-black text-gray-900">Quản lý Hình ảnh</h2>
+              <button onClick={() => setIsImageModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <p className="text-gray-500 mb-4 text-sm">Quán: <strong className="text-gray-800">{managingPoi.name}</strong></p>
+            
+            <div className="flex-1 overflow-y-auto min-h-[300px] bg-gray-50 p-4 rounded-xl border border-gray-100 mb-6">
+              {!managingPoi.images || managingPoi.images.length === 0 ? (
+                <div className="h-full flex items-center justify-center text-gray-400 text-sm">Chưa có hình ảnh nào.</div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {managingPoi.images.map((img, idx) => (
+                    <div key={idx} className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-video bg-gray-100">
+                      {img ? (
+                        <img src={`${API_BASE_URL}${img}`} alt="POI" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">Đang tải...</div>
+                      )}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <button 
+                          onClick={() => handleDeleteImage(img)}
+                          className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+                          title="Xóa ảnh"
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+              <label className={`cursor-pointer px-4 py-2 bg-blue-50 text-blue-600 font-bold rounded-xl hover:bg-blue-100 transition-colors ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}>
+                {uploadingImage ? 'Đang tải lên...' : '➕ Thêm Ảnh mới'}
+                <input type="file" className="hidden" accept="image/*" onChange={handleUploadImage} disabled={uploadingImage} />
+              </label>
+              <button 
+                onClick={() => setIsImageModalOpen(false)}
+                className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors"
+              >
+                Đóng
               </button>
             </div>
           </div>
