@@ -29,6 +29,14 @@ public static class Permissions
         public const string Delete = "menu:delete";
     }
 
+    /// <summary>Review management — 3 permissions</summary>
+    public static class Review
+    {
+        public const string Read = "review:read";
+        public const string Create = "review:create";
+        public const string Delete = "review:delete";
+    }
+
     /// <summary>User management — 4 permissions</summary>
     public static class User
     {
@@ -95,6 +103,7 @@ public static class Permissions
     [
         Poi.Read, Poi.Create, Poi.Update, Poi.Delete, Poi.Approve, Poi.Toggle,
         Menu.Read, Menu.Create, Menu.Update, Menu.Delete,
+        Review.Read, Review.Create, Review.Delete,
         User.Read, User.Create, User.Update, User.Delete,
         Role.Read, Role.Create, Role.Update, Role.Delete,
         Analytics.View, Analytics.Export, Analytics.ViewOwn,
@@ -109,6 +118,7 @@ public static class Permissions
     [
         Poi.Read, Poi.Create, Poi.Update, Poi.Delete, Poi.Approve, Poi.Toggle,
         Menu.Read, Menu.Create, Menu.Update, Menu.Delete,
+        Review.Read, Review.Create, Review.Delete,
         User.Read, User.Create, User.Update, User.Delete,
         Role.Read,
         Analytics.View, Analytics.Export,
@@ -121,6 +131,7 @@ public static class Permissions
     [
         Poi.Read, Poi.Create,
         Menu.Read, Menu.Create, Menu.Update,
+        Review.Read, Review.Create,
         Analytics.ViewOwn,
         Owner.Access, Owner.SubmitPoi, Owner.ManageOwnPoi
     ];
@@ -130,9 +141,10 @@ public static class Permissions
     [
         Poi.Read,
         Menu.Read,
+        Review.Read, Review.Create,
         Owner.Register
     ];
 
     /// <summary>Total permission count for validation.</summary>
-    public const int TotalPermissionCount = 32;
+    public const int TotalPermissionCount = 35;
 }

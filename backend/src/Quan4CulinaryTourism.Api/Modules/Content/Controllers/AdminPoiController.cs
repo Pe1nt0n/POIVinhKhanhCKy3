@@ -137,12 +137,81 @@ public class AdminPoiController : ControllerBase
         }
     }
 
-    [HttpPut("{id}/localizations")]
+    [HttpDelete("{id}/images")]
     [RequirePermission(Permissions.Poi.Update)]
-    public async Task<IActionResult> UpsertLocalization(string id, [FromBody] PoiLocalization localization)
+    public async Task<IActionResult> DeleteImage(string id, [FromBody] string imageUrl)
     {
-        localization.PoiId = id;
-        await _localizationService.UpsertLocalizationAsync(localization);
-        return Ok(ApiResponse.Ok("Localization saved successfully."));
+        var existing = await _poiService.GetByIdAsync(id);
+        if (existing == null) return NotFound(ApiResponse.Fail("POI not found."));
+
+        if (existing.Images.Remove(imageUrl))
+        {
+            await _poiService.UpdateAsync(id, existing);
+            return Ok(ApiResponse.Ok("Image deleted successfully."));
+        }
+
+        return BadRequest(ApiResponse.Fail("Image not found in this POI."));
+    }
+
+    [HttpGet("{id}/localizations")]
+    [RequirePermission(Permissions.Poi.Read)]
+    public async Task<IActionResult> GetLocalizations(string id)
+    {
+        var localizations = await _localizationService.GetLocalizationsForPoiAsync(id);
+        return Ok(ApiResponse<object>.Ok(localizations));
+    }
+
+    [HttpDelete("{id}/localizations/{lang}/audio")]
+    [RequirePermission(Permissions.Poi.Update)]
+    public async Task<IActionResult> DeleteLocalizationAudio(string id, string lang)
+    {
+        var existingLocs = await _localizationService.GetLocalizationsForPoiAsync(id);
+        var existingLoc = existingLocs.FirstOrDefault(l => l.Lang == lang);
+
+        if (existingLoc == null)
+            return NotFound(ApiResponse.Fail("Localization not found."));
+
+        existingLoc.AudioUrl = null;
+        await _localizationService.UpsertLocalizationAsync(existingLoc);
+        return Ok(ApiResponse.Ok("Audio deleted successfully."));
+    }
+
+    [HttpPost("{id}/localizations")]
+    [RequirePermission(Permissions.Poi.Update)]
+    public async Task<IActionResult> UpsertLocalization(
+        string id, 
+        [FromForm] string lang, 
+        [FromForm] string name, 
+        [FromForm] string description, 
+        IFormFile? audio)
+    {
+        var existingLocs = await _localizationService.GetLocalizationsForPoiAsync(id);
+        var existingLoc = existingLocs.FirstOrDefault(l => l.Lang == lang);
+        
+        string? audioUrl = existingLoc?.AudioUrl;
+
+        if (audio != null)
+        {
+            try
+            {
+                audioUrl = await _mediaStorage.SaveAudioAsync(audio);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ApiResponse.Fail(ex.Message));
+            }
+        }
+
+        var loc = new PoiLocalization
+        {
+            PoiId = id,
+            Lang = lang,
+            Name = name,
+            Description = description,
+            AudioUrl = audioUrl
+        };
+
+        await _localizationService.UpsertLocalizationAsync(loc);
+        return Ok(ApiResponse.Ok("Localization and audio saved successfully."));
     }
 }

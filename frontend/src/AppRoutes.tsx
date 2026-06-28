@@ -12,6 +12,7 @@ import { AdminUsers } from './pages/admin/AdminUsers';
 import { AdminPois } from './pages/admin/AdminPois';
 import { AdminApprovals } from './pages/admin/AdminApprovals';
 import { AdminAudioTasks } from './pages/admin/AdminAudioTasks';
+import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { ListenPoi } from './pages/ListenPoi';
 import { QRScanner } from './pages/QRScanner';
 import { useAuthStore } from './store/useAuthStore';
@@ -36,8 +37,8 @@ export const AppRoutes: React.FC = () => {
         {/* Admin Protected Routes */}
         <Route element={<ProtectedRoute allowedRoles={['admin', 'super_admin']} />}>
           <Route element={<AdminLayout />}>
-            <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
-            <Route path="/admin/dashboard" element={<Navigate to="/admin/users" replace />} />
+            <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/pois" element={<AdminPois />} />
             <Route path="/admin/audio-tasks" element={<AdminAudioTasks />} />

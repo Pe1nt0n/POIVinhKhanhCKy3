@@ -27,6 +27,12 @@ export const AdminLayout: React.FC = () => {
         
         <nav className="flex-1 p-4 space-y-1">
           <NavLink 
+            to="/admin/dashboard" 
+            className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+          >
+            📊 Dashboard
+          </NavLink>
+          <NavLink 
             to="/admin/users" 
             className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
           >
@@ -38,12 +44,7 @@ export const AdminLayout: React.FC = () => {
           >
             🏪 Quản lý POI
           </NavLink>
-          <NavLink 
-            to="/admin/audio-tasks" 
-            className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
-          >
-            🎧 Trình Tạo Audio
-          </NavLink>
+
           <NavLink 
             to="/admin/approvals" 
             className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}

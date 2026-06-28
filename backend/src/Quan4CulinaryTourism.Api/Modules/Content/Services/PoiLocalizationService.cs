@@ -41,6 +41,11 @@ public class PoiLocalizationService
         return results;
     }
 
+    public async Task<List<PoiLocalization>> GetLocalizationsForPoiAsync(string poiId)
+    {
+        return await _localizations.Find(l => l.PoiId == poiId).ToListAsync();
+    }
+
     public async Task UpsertLocalizationAsync(PoiLocalization localization)
     {
         localization.UpdatedAt = DateTime.UtcNow;

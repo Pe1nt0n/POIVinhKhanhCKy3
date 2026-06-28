@@ -81,5 +81,17 @@ public class MongoDbContext
             locIndexKeys, 
             new CreateIndexOptions { Unique = true });
         await locCollection.Indexes.CreateOneAsync(locIndexModel);
+        // 3. Review indexes (PoiId and UserId)
+        var reviewCollection = GetCollection<Review>("reviews");
+        var reviewIndexKeys = Builders<Review>.IndexKeys
+            .Ascending(r => r.PoiId)
+            .Descending(r => r.CreatedAt);
+        var reviewIndexModel = new CreateIndexModel<Review>(reviewIndexKeys);
+        await reviewCollection.Indexes.CreateOneAsync(reviewIndexModel);
+        
+        var userReviewIndexKeys = Builders<Review>.IndexKeys
+            .Ascending(r => r.UserId);
+        var userReviewIndexModel = new CreateIndexModel<Review>(userReviewIndexKeys);
+        await reviewCollection.Indexes.CreateOneAsync(userReviewIndexModel);
     }
 }
