@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { usePoiStore } from '../store/usePoiStore';
 import { t } from '../utils/translations';
+import * as signalR from '@microsoft/signalr';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -42,6 +43,23 @@ export const ListenPoi: React.FC = () => {
     }
   }, [pois.length, isSyncing, initOfflineData, syncWithServer]);
 
+  useEffect(() => {
+    // Establish SignalR connection for presence tracking
+    const deviceId = localStorage.getItem('device_id') || crypto.randomUUID();
+    localStorage.setItem('device_id', deviceId);
+
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl(`${API_BASE_URL}/hubs/public-analytics?device_id=${deviceId}`)
+      .withAutomaticReconnect()
+      .build();
+      
+    connection.start().catch(err => console.error('Failed to start presence tracking', err));
+
+    return () => {
+      connection.stop().catch(() => {});
+    };
+  }, []);
+
   const poi = pois.find(p => p.id === poiId);
 
   useEffect(() => {
@@ -60,10 +78,10 @@ export const ListenPoi: React.FC = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             events: [{
-              eventType: 'audio_play',
-              poiId: poiId,
-              deviceId: deviceId,
-              sessionId: deviceId
+              event_type: 'audio_play',
+              poi_id: poiId,
+              device_id: deviceId,
+              session_id: deviceId
             }]
           })
         }).catch(err => console.error('Failed to track audio play', err));

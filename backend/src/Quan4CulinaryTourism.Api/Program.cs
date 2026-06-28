@@ -9,6 +9,7 @@ using Quan4CulinaryTourism.Api.Common.Infrastructure;
 using Quan4CulinaryTourism.Api.Common.Middleware;
 using Quan4CulinaryTourism.Api.Modules.Admin.Services;
 using Quan4CulinaryTourism.Api.Modules.AiAdvisor.Services;
+using Quan4CulinaryTourism.Api.Modules.Analytics.Hubs;
 using Quan4CulinaryTourism.Api.Modules.Analytics.Services;
 using Quan4CulinaryTourism.Api.Modules.Audio.Services;
 using Quan4CulinaryTourism.Api.Modules.Content.Services;
@@ -61,6 +62,7 @@ builder.Services.AddScoped<AiQuotaService>();
 builder.Services.AddHttpClient<IAiProvider, GeminiService>();
 
 builder.Services.AddScoped<AnalyticsService>();
+builder.Services.AddSignalR();
 
 // ============================================================================
 // 4. JWT AUTHENTICATION — Read token from HttpOnly cookie
@@ -204,8 +206,10 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Map controllers
+// Map controllers and hubs
 app.MapControllers();
+app.MapHub<AnalyticsHub>("/hubs/analytics");
+app.MapHub<PublicAnalyticsHub>("/hubs/public-analytics");
 
 // ============================================================================
 // DATABASE SEEDING

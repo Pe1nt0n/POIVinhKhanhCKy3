@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import * as signalR from '@microsoft/signalr';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -44,12 +45,27 @@ export const AdminDashboard: React.FC = () => {
     };
     loadAll();
 
-    // Tự động cập nhật mỗi 10 giây (cho active users, vv)
-    const intervalId = setInterval(() => {
+    // Tự động kết nối WebSocket (SignalR) để nhận cập nhật real-time
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl(`${API_BASE_URL}/hubs/analytics?role=admin`, {
+         withCredentials: true
+      })
+      .withAutomaticReconnect()
+      .build();
+
+    connection.start()
+      .then(() => console.log('Connected to Analytics SignalR Hub'))
+      .catch(err => console.error('SignalR Connection Error: ', err));
+
+    connection.on("ReceiveAnalyticsUpdate", () => {
+      console.log('Received real-time analytics update!');
       fetchStats();
       fetchTopAudio();
-    }, 10000);
-    return () => clearInterval(intervalId);
+    });
+
+    return () => {
+      connection.stop();
+    };
   }, []);
 
   return (
